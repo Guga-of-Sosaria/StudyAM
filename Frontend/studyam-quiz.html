@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Quiz IA CRUD v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07091a;
+  --surface: #0c1025;
+  --surface2: #121830;
+  --surface3: #1b2340;
+  --border: rgba(255,255,255,0.07);
+  --blue: #2d6aff;
+  --blue-light: #6696ff;
+  --blue-dim: rgba(45,106,255,0.1);
+  --orange: #ff6b1a;
+  --orange-dim: rgba(255,107,26,0.1);
+  --gold: #ffd166;
+  --green: #22d3a0;
+  --red: #ff4d6d;
+  --white: #eef2ff;
+  --muted: #5e6f96;
+  --muted2: #8896bb;
+}
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* BG */
+.bg-glow {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(45,106,255,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(255,107,26,0.08) 0%, transparent 60%);
+}
+.grid-lines {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(7,9,26,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; gap: 20px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--blue), var(--orange));
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 20px rgba(45,106,255,0.4);
+}
+.logo-name {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px; color: var(--white);
+}
+.logo-name b { color: var(--orange); font-weight: 800; }
+.topbar-nav { display: flex; gap: 4px; margin-left: 24px; }
+.nav-item {
+  padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  color: var(--muted2); cursor: pointer; transition: all 0.2s; border: none; background: transparent;
+}
+.nav-item:hover { color: var(--white); background: var(--surface2); }
+.nav-item.active { color: var(--white); background: var(--blue-dim); border: 1px solid rgba(45,106,255,0.2); }
+.topbar-end { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.notif-btn {
+  width: 34px; height: 34px; border-radius: 9px; background: var(--surface2);
+  border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; position: relative;
+}
+.notif-dot {
+  position: absolute; top: 6px; right: 6px; width: 6px; height: 6px;
+  background: var(--orange); border-radius: 50%; border: 1px solid var(--bg);
+}
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #1040c8);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  border: 2px solid rgba(45,106,255,0.4);
+}
+
+/* PAGE */
+.page { position: relative; z-index: 1; padding: 36px 40px; max-width: 1300px; margin: 0 auto; }
+
+/* PAGE HEADER */
+.page-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 32px;
+}
+.page-title h1 {
+  font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800;
+  letter-spacing: -1px; color: var(--white); margin-bottom: 4px;
+}
+.page-title p { font-size: 14px; color: var(--muted2); }
+.header-actions { display: flex; gap: 10px; }
+.btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 10px; border: none;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.22s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue), #1a50df);
+  color: white; box-shadow: 0 4px 18px rgba(45,106,255,0.35);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 7px 24px rgba(45,106,255,0.5); }
+.btn-ghost {
+  background: var(--surface2); color: var(--muted2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.15); }
+.btn-ai {
+  background: linear-gradient(135deg, rgba(45,106,255,0.2), rgba(255,107,26,0.15));
+  color: var(--white); border: 1px solid rgba(45,106,255,0.3);
+  box-shadow: 0 0 20px rgba(45,106,255,0.1);
+}
+.btn-ai:hover { background: linear-gradient(135deg, rgba(45,106,255,0.3), rgba(255,107,26,0.22)); transform: translateY(-1px); }
+
+/* STATS ROW */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+  animation: fadeUp 0.4s ease both;
+}
+.stat-card:nth-child(2) { animation-delay: 0.05s; }
+.stat-card:nth-child(3) { animation-delay: 0.1s; }
+.stat-card:nth-child(4) { animation-delay: 0.15s; }
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.stat-value {
+  font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
+  background: linear-gradient(90deg, var(--blue-light), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* AI BANNER */
+.ai-banner {
+  background: linear-gradient(135deg, rgba(45,106,255,0.1) 0%, rgba(255,107,26,0.07) 100%);
+  border: 1px solid rgba(45,106,255,0.22);
+  border-radius: 18px; padding: 24px 28px; margin-bottom: 28px;
+  display: flex; align-items: center; gap: 20px;
+  position: relative; overflow: hidden;
+  animation: fadeUp 0.4s 0.2s ease both;
+}
+.ai-banner::after {
+  content: '✦';
+  position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+  font-size: 80px; color: rgba(45,106,255,0.06);
+  font-family: 'Syne', sans-serif;
+}
+.ai-banner-icon {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--blue), var(--orange));
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; box-shadow: 0 6px 24px rgba(45,106,255,0.4);
+}
+.ai-banner-text h3 {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 4px;
+}
+.ai-banner-text p { font-size: 13px; color: var(--muted2); }
+.ai-banner-input {
+  flex: 1;
+  display: flex; gap: 10px;
+}
+.ai-input {
+  flex: 1; background: rgba(0,0,0,0.3);
+  border: 1.5px solid rgba(45,106,255,0.2); border-radius: 11px;
+  padding: 11px 16px; font-size: 13px; color: var(--white);
+  font-family: 'Outfit', sans-serif; outline: none;
+  transition: border-color 0.2s;
+}
+.ai-input:focus { border-color: var(--blue); }
+.ai-input::placeholder { color: var(--muted); }
+.btn-gen {
+  background: linear-gradient(135deg, var(--blue), #1a50df);
+  border: none; border-radius: 11px; padding: 11px 22px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  color: white; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(45,106,255,0.35);
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.btn-gen:hover { transform: translateY(-1px); }
+
+/* TABS */
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 22px;
+  border-bottom: 1px solid var(--border); padding-bottom: 0;
+}
+.tab {
+  padding: 10px 18px; font-size: 13px; font-weight: 600;
+  color: var(--muted2); cursor: pointer; border: none; background: transparent;
+  border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px;
+}
+.tab:hover { color: var(--white); }
+.tab.active { color: var(--blue-light); border-bottom-color: var(--blue); }
+
+/* QUIZ CARDS GRID */
+.cards-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.quiz-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 18px; padding: 22px;
+  cursor: pointer; transition: all 0.25s;
+  animation: fadeUp 0.4s ease both; position: relative; overflow: hidden;
+}
+.quiz-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--blue), transparent);
+  opacity: 0; transition: opacity 0.25s;
+}
+.quiz-card:hover { border-color: rgba(45,106,255,0.3); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+.quiz-card:hover::before { opacity: 1; }
+
+.qc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.qc-subject {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 3px 9px; border-radius: 20px;
+}
+.sub-bio { background: rgba(34,211,160,0.12); color: var(--green); }
+.sub-hist { background: rgba(255,209,102,0.12); color: var(--gold); }
+.sub-mat { background: rgba(45,106,255,0.15); color: var(--blue-light); }
+.sub-port { background: rgba(255,107,26,0.12); color: var(--orange); }
+.qc-menu {
+  width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.2s; color: var(--muted);
+}
+.qc-menu:hover { background: var(--surface3); color: var(--white); }
+.qc-title {
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+  color: var(--white); margin-bottom: 6px; line-height: 1.3;
+}
+.qc-desc { font-size: 12px; color: var(--muted2); margin-bottom: 16px; line-height: 1.5; }
+.qc-stats { display: flex; gap: 12px; margin-bottom: 16px; }
+.qc-stat { font-size: 12px; color: var(--muted2); display: flex; align-items: center; gap: 4px; }
+.qc-bar-wrap { height: 3px; background: var(--surface3); border-radius: 2px; margin-bottom: 16px; }
+.qc-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--blue), var(--blue-light)); }
+.qc-footer { display: flex; justify-content: space-between; align-items: center; }
+.ai-chip {
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+  background: var(--blue-dim); color: var(--blue-light);
+  border: 1px solid rgba(45,106,255,0.2);
+  display: flex; align-items: center; gap: 4px;
+}
+.qc-actions { display: flex; gap: 6px; }
+.qc-btn {
+  padding: 5px 12px; border-radius: 7px; font-size: 11px; font-weight: 600;
+  border: none; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif;
+}
+.qc-btn-edit { background: var(--blue-dim); color: var(--blue-light); border: 1px solid rgba(45,106,255,0.2); }
+.qc-btn-edit:hover { background: rgba(45,106,255,0.2); }
+.qc-btn-del { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.qc-btn-del:hover { background: rgba(255,77,109,0.1); color: var(--red); border-color: rgba(255,77,109,0.3); }
+
+/* NEW CARD */
+.new-card {
+  background: transparent; border: 2px dashed rgba(255,255,255,0.08);
+  border-radius: 18px; padding: 22px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 200px; cursor: pointer; transition: all 0.25s; gap: 10px;
+}
+.new-card:hover { border-color: rgba(45,106,255,0.4); background: var(--blue-dim); }
+.new-card-icon { font-size: 28px; }
+.new-card-text { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); }
+.new-card:hover .new-card-text { color: var(--blue-light); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  width: 100%; max-width: 680px; max-height: 90vh;
+  background: var(--surface); border: 1px solid rgba(45,106,255,0.2);
+  border-radius: 24px; overflow-y: auto;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(45,106,255,0.1);
+  transform: scale(0.95) translateY(20px); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+
+.modal-header {
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+}
+.modal-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--blue), var(--orange));
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(45,106,255,0.4);
+}
+.modal-title { flex: 1; }
+.modal-title h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--white); margin-bottom: 2px; }
+.modal-title p { font-size: 12px; color: var(--muted2); }
+.close-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  transition: all 0.2s;
+}
+.close-btn:hover { background: var(--surface2); color: var(--white); }
+
+.modal-body { padding: 24px 28px; }
+
+.m-label { font-size: 12px; font-weight: 600; color: var(--muted2); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
+.m-input, .m-textarea {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 14px;
+  font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--white);
+  outline: none; transition: border-color 0.2s; margin-bottom: 18px;
+}
+.m-input:focus, .m-textarea:focus { border-color: var(--blue); background: rgba(45,106,255,0.05); }
+.m-input::placeholder, .m-textarea::placeholder { color: var(--muted); }
+.m-textarea { resize: vertical; min-height: 80px; }
+.m-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.m-select {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 14px; font-size: 13px; color: var(--muted2);
+  outline: none; cursor: pointer; font-family: 'Outfit', sans-serif; margin-bottom: 18px;
+}
+.m-select:focus { border-color: var(--blue); }
+
+.ai-gen-block {
+  background: linear-gradient(135deg, rgba(45,106,255,0.08), rgba(255,107,26,0.05));
+  border: 1px solid rgba(45,106,255,0.2); border-radius: 14px;
+  padding: 18px; margin-bottom: 20px;
+}
+.ai-gen-label {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--white);
+  margin-bottom: 12px;
+}
+.ai-spark { color: var(--blue-light); }
+.ai-gen-row { display: flex; gap: 8px; }
+.ai-gen-input {
+  flex: 1; background: rgba(0,0,0,0.25); border: 1.5px solid rgba(45,106,255,0.2);
+  border-radius: 9px; padding: 10px 14px; font-size: 13px; color: var(--white);
+  font-family: 'Outfit', sans-serif; outline: none; transition: border-color 0.2s;
+}
+.ai-gen-input:focus { border-color: var(--blue); }
+.ai-gen-input::placeholder { color: var(--muted); }
+.ai-gen-btn {
+  background: linear-gradient(135deg, var(--blue), #1a50df);
+  border: none; border-radius: 9px; padding: 10px 18px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700;
+  color: white; cursor: pointer;
+  box-shadow: 0 3px 14px rgba(45,106,255,0.4);
+  white-space: nowrap; transition: all 0.2s;
+  display: flex; align-items: center; gap: 5px;
+}
+.ai-gen-btn:hover { transform: translateY(-1px); }
+
+.modal-footer {
+  padding: 16px 28px 24px;
+  display: flex; justify-content: flex-end; gap: 10px;
+  border-top: 1px solid var(--border);
+}
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="grid-lines"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">🦉</div>
+    <div class="logo-name">Study<b>AM</b></div>
+  </div>
+  <nav class="topbar-nav">
+    <button class="nav-item">Dashboard</button>
+    <button class="nav-item active">Quizzes</button>
+    <button class="nav-item">Turmas</button>
+    <button class="nav-item">Relatórios</button>
+  </nav>
+  <div class="topbar-end">
+    <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+    <div class="avatar">JP</div>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Banco de Quizzes</h1>
+      <p>Gerencie, edite e crie quizzes com auxílio de Inteligência Artificial</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost">📤 Importar</button>
+      <button class="btn btn-ai">✦ Gerar com IA</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Novo Quiz</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total de Quizzes</div>
+      <div class="stat-value">24</div>
+      <div class="stat-sub">↑ 3 esse mês</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gerados por IA</div>
+      <div class="stat-value">16</div>
+      <div class="stat-sub">67% do total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Questões criadas</div>
+      <div class="stat-value">312</div>
+      <div class="stat-sub">~13 por quiz</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Respondidos</div>
+      <div class="stat-value">1.8k</div>
+      <div class="stat-sub">pelos alunos</div>
+    </div>
+  </div>
+
+  <!-- AI BANNER -->
+  <div class="ai-banner">
+    <div class="ai-banner-icon">🤖</div>
+    <div class="ai-banner-text">
+      <h3>Gerador Inteligente de Questões</h3>
+      <p>Descreva o tema e a IA cria um quiz completo em segundos</p>
+    </div>
+    <div class="ai-banner-input">
+      <input class="ai-input" placeholder="Ex: 10 questões sobre fotossíntese, nível intermediário...">
+      <button class="btn-gen">✦ Gerar Quiz</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active">Todos (24)</button>
+    <button class="tab">Gerados por IA (16)</button>
+    <button class="tab">Manuais (8)</button>
+    <button class="tab">Publicados (18)</button>
+    <button class="tab">Rascunhos (6)</button>
+  </div>
+
+  <!-- GRID -->
+  <div class="cards-grid">
+
+    <div class="quiz-card" style="animation-delay:0.0s">
+      <div class="qc-top">
+        <span class="qc-subject sub-bio">Biologia</span>
+        <button class="qc-menu">⋯</button>
+      </div>
+      <div class="qc-title">Biologia Celular — Cap. 3</div>
+      <div class="qc-desc">Organelas, ciclo celular, mitose e meiose. Ideal para revisão de provas.</div>
+      <div class="qc-stats">
+        <span class="qc-stat">📝 12 questões</span>
+        <span class="qc-stat">⏱ 20 min</span>
+        <span class="qc-stat">👁 48 respostas</span>
+      </div>
+      <div class="qc-bar-wrap"><div class="qc-bar" style="width:75%"></div></div>
+      <div class="qc-footer">
+        <span class="ai-chip">✦ IA</span>
+        <div class="qc-actions">
+          <button class="qc-btn qc-btn-edit" onclick="openModal()">Editar</button>
+          <button class="qc-btn qc-btn-del">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-card" style="animation-delay:0.06s">
+      <div class="qc-top">
+        <span class="qc-subject sub-hist">História</span>
+        <button class="qc-menu">⋯</button>
+      </div>
+      <div class="qc-title">Revolução Industrial</div>
+      <div class="qc-desc">Causas, consequências e principais personagens. Quiz criado manualmente.</div>
+      <div class="qc-stats">
+        <span class="qc-stat">📝 8 questões</span>
+        <span class="qc-stat">⏱ 15 min</span>
+        <span class="qc-stat">👁 32 respostas</span>
+      </div>
+      <div class="qc-bar-wrap"><div class="qc-bar" style="width:60%;background:linear-gradient(90deg,var(--gold),#ffaa44)"></div></div>
+      <div class="qc-footer">
+        <span class="ai-chip" style="background:rgba(255,209,102,0.12);color:var(--gold);border-color:rgba(255,209,102,0.2)">📝 Manual</span>
+        <div class="qc-actions">
+          <button class="qc-btn qc-btn-edit" onclick="openModal()">Editar</button>
+          <button class="qc-btn qc-btn-del">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-card" style="animation-delay:0.12s">
+      <div class="qc-top">
+        <span class="qc-subject sub-mat">Matemática</span>
+        <button class="qc-menu">⋯</button>
+      </div>
+      <div class="qc-title">Funções do 2º Grau</div>
+      <div class="qc-desc">Fórmula de Bhaskara, vértice, gráficos e aplicações práticas.</div>
+      <div class="qc-stats">
+        <span class="qc-stat">📝 10 questões</span>
+        <span class="qc-stat">⏱ 18 min</span>
+        <span class="qc-stat">👁 61 respostas</span>
+      </div>
+      <div class="qc-bar-wrap"><div class="qc-bar" style="width:88%"></div></div>
+      <div class="qc-footer">
+        <span class="ai-chip">✦ IA</span>
+        <div class="qc-actions">
+          <button class="qc-btn qc-btn-edit" onclick="openModal()">Editar</button>
+          <button class="qc-btn qc-btn-del">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-card" style="animation-delay:0.18s">
+      <div class="qc-top">
+        <span class="qc-subject sub-port">Português</span>
+        <button class="qc-menu">⋯</button>
+      </div>
+      <div class="qc-title">Gramática — Concordância</div>
+      <div class="qc-desc">Concordância verbal e nominal, casos especiais e exceções gramaticais.</div>
+      <div class="qc-stats">
+        <span class="qc-stat">📝 15 questões</span>
+        <span class="qc-stat">⏱ 25 min</span>
+        <span class="qc-stat">👁 27 respostas</span>
+      </div>
+      <div class="qc-bar-wrap"><div class="qc-bar" style="width:45%;background:linear-gradient(90deg,var(--orange),#ff9240)"></div></div>
+      <div class="qc-footer">
+        <span class="ai-chip">✦ IA</span>
+        <div class="qc-actions">
+          <button class="qc-btn qc-btn-edit" onclick="openModal()">Editar</button>
+          <button class="qc-btn qc-btn-del">🗑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="new-card" onclick="openModal()">
+      <div class="new-card-icon">✦</div>
+      <div class="new-card-text">Criar novo quiz</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">📝</div>
+      <div class="modal-title">
+        <h2>Criar Novo Quiz</h2>
+        <p>Preencha os dados ou gere questões com IA</p>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="m-label">Título do Quiz</div>
+      <input class="m-input" placeholder="Ex: Biologia Celular — Cap. 3">
+      <div class="m-label">Descrição</div>
+      <textarea class="m-textarea" placeholder="Descreva brevemente o conteúdo abordado..."></textarea>
+      <div class="m-row">
+        <div>
+          <div class="m-label">Disciplina</div>
+          <select class="m-select">
+            <option>Biologia</option><option>Matemática</option><option>História</option><option>Português</option>
+          </select>
+        </div>
+        <div>
+          <div class="m-label">Turma</div>
+          <select class="m-select">
+            <option>3º Ano A</option><option>3º Ano B</option><option>2º Ano A</option>
+          </select>
+        </div>
+      </div>
+      <div class="m-row">
+        <div>
+          <div class="m-label">Nível de dificuldade</div>
+          <select class="m-select">
+            <option>Fácil</option><option selected>Médio</option><option>Difícil</option>
+          </select>
+        </div>
+        <div>
+          <div class="m-label">Tempo limite</div>
+          <input class="m-input" placeholder="Ex: 30 minutos" style="margin-bottom:0">
+        </div>
+      </div>
+
+      <div class="ai-gen-block">
+        <div class="ai-gen-label">
+          <span class="ai-spark">✦</span> Gerar questões automaticamente com IA
+        </div>
+        <div class="ai-gen-row">
+          <input class="ai-gen-input" placeholder="Ex: 10 questões de múltipla escolha sobre mitose, nível médio...">
+          <button class="ai-gen-btn">✦ Gerar</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary">Criar Quiz →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('modal').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+  function closeOnOverlay(e) {
+    if (e.target.id === 'modal') closeModal();
+  }
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.addEventListener('click', function() {
+      document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

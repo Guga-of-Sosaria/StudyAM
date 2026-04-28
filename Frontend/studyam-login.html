@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Login v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --blue: #2d6aff;
+    --blue-mid: #4f80ff;
+    --orange: #ff6b1a;
+    --navy: #0f1e4a;
+    --body: #4a5578;
+    --muted: #9aa3be;
+    --border: #e2e6f3;
+  }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 20px;
+    position: relative; overflow: hidden;
+  }
+  .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+  .blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(45,106,255,0.12), transparent 70%); top: -200px; right: -100px; animation: float1 10s ease-in-out infinite; }
+  .blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,107,26,0.1), transparent 70%); bottom: -150px; left: -100px; animation: float2 12s ease-in-out infinite; }
+  @keyframes float1 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(30px,-20px); } }
+  @keyframes float2 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-20px,30px); } }
+  .container {
+    position: relative; z-index: 1;
+    display: flex; width: 100%; max-width: 1000px;
+    background: var(--surface); border-radius: 32px; overflow: hidden;
+    box-shadow: 0 2px 0 rgba(255,255,255,0.8) inset, 0 32px 80px rgba(15,30,74,0.12), 0 8px 24px rgba(45,106,255,0.08);
+    border: 1px solid rgba(255,255,255,0.9);
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .accent-panel {
+    width: 340px; min-height: 600px;
+    background: linear-gradient(160deg, #1a3aad 0%, #0f2270 40%, #1a1040 100%);
+    padding: 48px 40px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden; flex-shrink: 0;
+  }
+  .accent-panel::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,107,26,0.35), transparent 70%);
+  }
+  .accent-panel::after {
+    content: ''; position: absolute; bottom: -60px; left: -60px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(45,106,255,0.4), transparent 70%);
+  }
+  .accent-top { position: relative; z-index: 1; }
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 48px; animation: fadeUp 0.5s 0.1s ease both; }
+  .logo-box {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08));
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .logo-text em { font-style: normal; color: #ffaa44; }
+  .accent-headline { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: white; line-height: 1.25; letter-spacing: -0.5px; margin-bottom: 16px; animation: fadeUp 0.5s 0.2s ease both; }
+  .accent-sub { font-size: 13.5px; color: rgba(255,255,255,0.6); line-height: 1.7; animation: fadeUp 0.5s 0.3s ease both; }
+  .accent-bottom { position: relative; z-index: 1; }
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 14px; animation: fadeUp 0.5s 0.4s ease both; }
+  .feature-list li { display: flex; align-items: center; gap: 12px; font-size: 13px; color: rgba(255,255,255,0.7); }
+  .feature-dot { width: 28px; height: 28px; flex-shrink: 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .form-panel { flex: 1; padding: 52px 48px; display: flex; flex-direction: column; justify-content: center; }
+  .form-title { margin-bottom: 36px; animation: fadeUp 0.5s 0.15s ease both; }
+  .form-title h2 { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; margin-bottom: 6px; }
+  .form-title p { font-size: 14px; color: var(--muted); }
+  .role-tabs { display: flex; background: var(--bg); border-radius: 16px; padding: 5px; margin-bottom: 32px; border: 1px solid var(--border); animation: fadeUp 0.5s 0.2s ease both; }
+  .role-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 16px; border-radius: 12px; border: none; background: transparent; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); transition: all 0.25s ease; }
+  .role-tab:hover { color: var(--body); background: rgba(255,255,255,0.7); }
+  .role-tab.active-student { background: var(--surface); color: var(--blue); box-shadow: 0 2px 12px rgba(45,106,255,0.15), 0 1px 3px rgba(0,0,0,0.08); }
+  .role-tab.active-teacher { background: var(--surface); color: var(--orange); box-shadow: 0 2px 12px rgba(255,107,26,0.15), 0 1px 3px rgba(0,0,0,0.08); }
+  .tab-badge { font-size: 16px; line-height: 1; }
+  .fields { animation: fadeUp 0.5s 0.25s ease both; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 7px; }
+  .input-wrap { position: relative; }
+  .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; }
+  .field input { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px 12px 42px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: var(--navy); outline: none; transition: all 0.2s ease; }
+  .field input::placeholder { color: var(--muted); }
+  .field input:focus { border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(45,106,255,0.1); }
+  .row-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; animation: fadeUp 0.5s 0.3s ease both; }
+  .remember { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--body); cursor: pointer; }
+  .remember input { accent-color: var(--blue); width: 15px; height: 15px; cursor: pointer; }
+  .forgot a { font-size: 13px; color: var(--blue); text-decoration: none; font-weight: 600; }
+  .forgot a:hover { color: var(--orange); }
+  .btn-enter { width: 100%; border: none; border-radius: 14px; padding: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s ease; letter-spacing: 0.2px; animation: fadeUp 0.5s 0.35s ease both; }
+  .btn-student { background: linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 100%); color: white; box-shadow: 0 6px 20px rgba(45,106,255,0.3); }
+  .btn-student:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(45,106,255,0.4); }
+  .btn-teacher { background: linear-gradient(135deg, var(--orange) 0%, #ff9240 100%); color: white; box-shadow: 0 6px 20px rgba(255,107,26,0.3); }
+  .btn-teacher:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,107,26,0.4); }
+  .divider-or { display: flex; align-items: center; gap: 12px; margin: 20px 0; animation: fadeUp 0.5s 0.4s ease both; }
+  .divider-or::before, .divider-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider-or span { font-size: 12px; color: var(--muted); }
+  .social-row { display: flex; gap: 10px; animation: fadeUp 0.5s 0.45s ease both; }
+  .social-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--body); transition: all 0.2s ease; }
+  .social-btn:hover { background: white; border-color: #c5cde8; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .bottom-link { text-align: center; margin-top: 24px; font-size: 13px; color: var(--muted); animation: fadeUp 0.5s 0.5s ease both; }
+  .bottom-link a { color: var(--blue); text-decoration: none; font-weight: 600; }
+  .bottom-link a:hover { color: var(--orange); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="container">
+  <div class="accent-panel">
+    <div class="accent-top">
+      <div class="logo">
+        <div class="logo-box">🦉</div>
+        <div class="logo-text">Study<em>AM</em></div>
+      </div>
+      <h2 class="accent-headline">Sua jornada começa aqui.</h2>
+      <p class="accent-sub">Conectamos alunos e professores numa plataforma pensada para o aprendizado real.</p>
+    </div>
+    <div class="accent-bottom">
+      <ul class="feature-list">
+        <li><span class="feature-dot">⏱</span> Pomodoro &amp; foco profundo</li>
+        <li><span class="feature-dot">📊</span> Dashboard de progresso</li>
+        <li><span class="feature-dot">🤝</span> Turmas colaborativas</li>
+        <li><span class="feature-dot">📝</span> Notas e flashcards smart</li>
+      </ul>
+    </div>
+  </div>
+  <div class="form-panel">
+    <div class="form-title">
+      <h2>Acessar conta</h2>
+      <p>Escolha seu perfil e faça login para continuar</p>
+    </div>
+    <div class="role-tabs">
+      <button class="role-tab active-student" id="tab-s" onclick="switchRole('student')">
+        <span class="tab-badge">🎓</span> Sou Aluno
+      </button>
+      <button class="role-tab" id="tab-t" onclick="switchRole('teacher')">
+        <span class="tab-badge">📚</span> Sou Professor
+      </button>
+    </div>
+    <div class="fields">
+      <div class="field">
+        <label>Endereço de email</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="email" placeholder="nome@exemplo.com">
+        </div>
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="Sua senha">
+        </div>
+      </div>
+    </div>
+    <div class="row-meta">
+      <label class="remember"><input type="checkbox"> Lembrar de mim</label>
+      <div class="forgot"><a href="#">Esqueci minha senha</a></div>
+    </div>
+    <button class="btn-enter btn-student" id="main-btn">Entrar como Aluno →</button>
+    <div class="divider-or"><span>ou continuar com</span></div>
+    <div class="social-row">
+      <button class="social-btn">🔵 Google</button>
+      <button class="social-btn">🍎 Apple</button>
+      <button class="social-btn">🎓 Microsoft</button>
+    </div>
+    <div class="bottom-link">Não tem uma conta? <a href="#">Criar conta gratuita</a></div>
+  </div>
+</div>
+<script>
+  function switchRole(role) {
+    const ts = document.getElementById('tab-s');
+    const tt = document.getElementById('tab-t');
+    const btn = document.getElementById('main-btn');
+    ts.className = 'role-tab'; tt.className = 'role-tab';
+    if (role === 'student') {
+      ts.classList.add('active-student');
+      btn.className = 'btn-enter btn-student';
+      btn.textContent = 'Entrar como Aluno →';
+    } else {
+      tt.classList.add('active-teacher');
+      btn.className = 'btn-enter btn-teacher';
+      btn.textContent = 'Entrar como Professor →';
+    }
+  }
+</script>
+</body>
+</html>

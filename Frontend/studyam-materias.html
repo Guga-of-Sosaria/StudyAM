@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Matérias v1</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080c1a; --s1: #0e1428; --s2: #121830; --s3: #1b2340;
+  --border: rgba(255,255,255,0.07); --blue: #2d6aff; --blue-l: #6696ff;
+  --blue-d: rgba(45,106,255,0.12); --orange: #ff6b1a; --green: #22d3a0;
+  --green-d: rgba(34,211,160,0.1); --red: #ff4d6d; --red-d: rgba(255,77,109,0.1);
+  --gold: #ffd166; --white: #eef2ff; --m: #5e6f96; --m2: #8896bb;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; color: var(--white); overflow: hidden; }
+.topbar { height: 56px; display: flex; align-items: center; padding: 0 24px; gap: 16px; background: rgba(8,12,26,0.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(20px); flex-shrink: 0; position: relative; z-index: 50; }
+.t-logo { display: flex; align-items: center; gap: 10px; font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+.t-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--orange)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 16px rgba(45,106,255,0.4); }
+.t-dot { color: var(--orange); }
+.t-sep { width: 1px; height: 24px; background: var(--border); }
+.t-crumb { font-size: 13px; color: var(--m2); display: flex; gap: 7px; }
+.t-crumb .cur { color: var(--white); font-weight: 500; }
+.t-right { margin-left: auto; }
+.t-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #1040c8); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2px solid rgba(45,106,255,0.35); cursor: pointer; }
+.glow-bar { height: 1px; background: linear-gradient(90deg, transparent, rgba(45,106,255,0.5) 40%, rgba(255,107,26,0.4) 70%, transparent); flex-shrink: 0; }
+.app { display: flex; flex: 1; overflow: hidden; }
+.sb { width: 278px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--s1); display: flex; flex-direction: column; overflow: hidden; }
+.sb-head { padding: 18px 18px 14px; border-bottom: 1px solid var(--border); }
+.sb-head h3 { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--m); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; }
+.btn-new { width: 100%; background: linear-gradient(135deg, var(--blue), #1a4fd6); border: none; border-radius: 9px; padding: 9px 14px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; gap: 7px; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 14px rgba(45,106,255,0.3); }
+.btn-new:hover { transform: translateY(-1px); }
+.sb-search { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.sw { position: relative; }
+.sw::before { content: '🔍'; position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 11px; }
+.sw input { width: 100%; background: var(--s3); border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 10px 7px 28px; font-size: 12px; color: var(--white); outline: none; font-family: 'DM Sans', sans-serif; }
+.sw input::placeholder { color: var(--m); }
+.sw input:focus { border-color: var(--blue-l); }
+.sb-list { flex: 1; overflow-y: auto; padding: 6px; }
+.sb-list::-webkit-scrollbar { width: 3px; }
+.sb-list::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+.mat-item { padding: 11px 13px; border-radius: 10px; cursor: pointer; transition: all 0.2s; margin-bottom: 3px; border: 1.5px solid transparent; display: flex; align-items: center; gap: 10px; }
+.mat-item:hover { background: var(--s3); }
+.mat-item.active { background: var(--blue-d); border-color: rgba(45,106,255,0.28); }
+.mat-color { width: 8px; height: 32px; border-radius: 4px; flex-shrink: 0; }
+.mat-info { flex: 1; min-width: 0; }
+.mat-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-sub { font-size: 11px; color: var(--m2); }
+.mat-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700; flex-shrink: 0; }
+.sb-footer { padding: 10px 14px; border-top: 1px solid var(--border); }
+.sb-count { font-size: 11px; color: var(--m); text-align: center; }
+.main { flex: 1; overflow-y: auto; background: var(--bg); }
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+.main-top { padding: 28px 36px 0; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.main-title h1 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+.main-title p { font-size: 13px; color: var(--m2); }
+.main-acts { display: flex; gap: 8px; }
+.ibtn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--s1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; color: var(--m2); }
+.ibtn:hover { background: var(--s3); color: var(--white); }
+.ibtn.danger:hover { background: var(--red-d); border-color: rgba(255,77,109,0.3); color: var(--red); }
+.inner { padding: 0 36px 36px; }
+.fl { font-size: 12px; font-weight: 500; color: var(--m2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.finput { width: 100%; background: var(--s1); border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 14px; font-size: 14px; color: var(--white); outline: none; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.finput:focus { border-color: var(--blue); background: rgba(45,106,255,0.05); }
+.finput::placeholder { color: var(--m); }
+.ftextarea { min-height: 78px; resize: vertical; }
+.field-group { margin-bottom: 20px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.sdiv { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--m); text-transform: uppercase; letter-spacing: 1.2px; }
+.sdiv::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.swatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+.swatch:hover { transform: scale(1.1); }
+.swatch.sel { border-color: white; transform: scale(1.1); box-shadow: 0 0 12px rgba(255,255,255,0.3); }
+.icon-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.icon-opt { width: 38px; height: 38px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--s1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; }
+.icon-opt:hover { border-color: var(--blue-l); background: var(--blue-d); }
+.icon-opt.sel { border-color: var(--blue); background: var(--blue-d); box-shadow: 0 0 12px rgba(45,106,255,0.25); }
+.preview-panel { background: var(--s1); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 22px; }
+.pv-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--m); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+.pv-card { border-radius: 12px; padding: 18px; display: flex; gap: 14px; align-items: center; }
+.pv-icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.pv-info h4 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.pv-info p { font-size: 12px; opacity: 0.6; }
+.pv-pills { display: flex; gap: 6px; margin-top: 6px; }
+.pv-pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.content-block { background: var(--s1); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 10px; }
+.content-block:hover { border-color: rgba(45,106,255,0.2); }
+.cb-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+.cb-num { width: 26px; height: 26px; border-radius: 6px; background: var(--s3); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--m2); flex-shrink: 0; }
+.cb-input { flex: 1; background: transparent; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--white); outline: none; }
+.cb-input::placeholder { color: var(--m); }
+.cb-del { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--m); transition: all 0.18s; }
+.cb-del:hover { background: var(--red-d); border-color: rgba(255,77,109,0.3); color: var(--red); }
+.cb-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.ctag { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--border); background: var(--s3); color: var(--m2); cursor: pointer; transition: all 0.18s; }
+.ctag:hover, .ctag.on { background: var(--blue-d); border-color: rgba(45,106,255,0.3); color: var(--blue-l); }
+.btn-add-c { width: 100%; background: transparent; border: 1.5px dashed rgba(255,255,255,0.1); border-radius: 10px; padding: 11px; font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 600; color: var(--m); cursor: pointer; transition: all 0.2s; }
+.btn-add-c:hover { border-color: rgba(45,106,255,0.4); color: var(--blue-l); }
+.fsave { position: fixed; bottom: 24px; right: 28px; z-index: 200; display: flex; gap: 8px; }
+.btn-save { background: linear-gradient(135deg, var(--green), #16a87f); border: none; border-radius: 12px; padding: 12px 22px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 24px rgba(34,211,160,0.35); display: flex; align-items: center; gap: 7px; }
+.btn-save:hover { transform: translateY(-2px); }
+.btn-disc { background: var(--s1); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--m2); cursor: pointer; transition: all 0.2s; }
+.btn-disc:hover { color: var(--white); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.anim { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="t-logo"><div class="t-icon">🦉</div>Study<span class="t-dot">AM</span></div>
+  <div class="t-sep"></div>
+  <div class="t-crumb"><span>Matérias</span> › <span class="cur">Editar Matéria</span></div>
+  <div class="t-right"><div class="t-avatar">JP</div></div>
+</div>
+<div class="glow-bar"></div>
+<div class="app">
+  <div class="sb">
+    <div class="sb-head">
+      <h3>Matérias</h3>
+      <button class="btn-new">+ Nova Matéria</button>
+    </div>
+    <div class="sb-search"><div class="sw"><input placeholder="Buscar matéria..."></div></div>
+    <div class="sb-list">
+      <div class="mat-item active">
+        <div class="mat-color" style="background:#2d6aff"></div>
+        <div class="mat-info"><div class="mat-name">Biologia</div><div class="mat-sub">12 tópicos • 3 turmas</div></div>
+        <span class="mat-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0">Ativa</span>
+      </div>
+      <div class="mat-item">
+        <div class="mat-color" style="background:#ffd166"></div>
+        <div class="mat-info"><div class="mat-name">História</div><div class="mat-sub">8 tópicos • 2 turmas</div></div>
+        <span class="mat-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0">Ativa</span>
+      </div>
+      <div class="mat-item">
+        <div class="mat-color" style="background:#ff6b1a"></div>
+        <div class="mat-info"><div class="mat-name">Português</div><div class="mat-sub">15 tópicos • 4 turmas</div></div>
+        <span class="mat-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0">Ativa</span>
+      </div>
+      <div class="mat-item">
+        <div class="mat-color" style="background:#a78bfa"></div>
+        <div class="mat-info"><div class="mat-name">Química</div><div class="mat-sub">6 tópicos • 1 turma</div></div>
+        <span class="mat-badge" style="background:rgba(255,209,102,0.12);color:#ffd166">Rascunho</span>
+      </div>
+      <div class="mat-item">
+        <div class="mat-color" style="background:#22d3a0"></div>
+        <div class="mat-info"><div class="mat-name">Matemática</div><div class="mat-sub">20 tópicos • 5 turmas</div></div>
+        <span class="mat-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0">Ativa</span>
+      </div>
+      <div class="mat-item">
+        <div class="mat-color" style="background:#ff4d6d"></div>
+        <div class="mat-info"><div class="mat-name">Física</div><div class="mat-sub">10 tópicos • 2 turmas</div></div>
+        <span class="mat-badge" style="background:rgba(255,77,109,0.12);color:#ff4d6d">Inativa</span>
+      </div>
+    </div>
+    <div class="sb-footer"><div class="sb-count">6 matérias cadastradas</div></div>
+  </div>
+
+  <div class="main">
+    <div class="main-top anim">
+      <div class="main-title"><h1>Biologia</h1><p>Editando matéria • Criada em 10 Mar 2025</p></div>
+      <div class="main-acts">
+        <button class="ibtn">👁</button>
+        <button class="ibtn">⎘</button>
+        <button class="ibtn danger">🗑</button>
+      </div>
+    </div>
+    <div class="inner">
+      <div class="preview-panel anim">
+        <div class="pv-label">Pré-visualização do card</div>
+        <div class="pv-card" style="background:linear-gradient(135deg,rgba(45,106,255,0.12),rgba(45,106,255,0.04))">
+          <div class="pv-icon-box" style="background:rgba(45,106,255,0.2)">🔬</div>
+          <div class="pv-info">
+            <h4>Biologia</h4>
+            <p>Ciências da vida e processos biológicos</p>
+            <div class="pv-pills">
+              <span class="pv-pill" style="background:rgba(45,106,255,0.2);color:#6696ff">12 tópicos</span>
+              <span class="pv-pill" style="background:rgba(34,211,160,0.15);color:#22d3a0">Ativa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sdiv anim">Dados básicos</div>
+      <div class="two-col anim" style="animation-delay:.05s">
+        <div class="field-group"><div class="fl">Nome da Matéria</div><input class="finput" value="Biologia"></div>
+        <div class="field-group"><div class="fl">Código / Sigla</div><input class="finput" value="BIO-01"></div>
+      </div>
+      <div class="field-group anim" style="animation-delay:.08s">
+        <div class="fl">Descrição</div>
+        <textarea class="finput ftextarea">Estudo dos seres vivos, suas estruturas, funções, crescimento, origem, evolução e distribuição.</textarea>
+      </div>
+
+      <div class="sdiv anim" style="animation-delay:.1s">Identidade visual</div>
+      <div class="field-group anim" style="animation-delay:.12s">
+        <div class="fl">Cor da matéria</div>
+        <div class="color-swatches">
+          <div class="swatch sel" style="background:#2d6aff" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#22d3a0" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#ffd166" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#ff6b1a" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#ff4d6d" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#a78bfa" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#34d399" onclick="setSwatch(this)"></div>
+          <div class="swatch" style="background:#f472b6" onclick="setSwatch(this)"></div>
+        </div>
+      </div>
+      <div class="field-group anim" style="animation-delay:.14s">
+        <div class="fl">Ícone</div>
+        <div class="icon-grid">
+          <div class="icon-opt sel" onclick="setIcon(this)">🔬</div>
+          <div class="icon-opt" onclick="setIcon(this)">🧬</div>
+          <div class="icon-opt" onclick="setIcon(this)">📐</div>
+          <div class="icon-opt" onclick="setIcon(this)">📚</div>
+          <div class="icon-opt" onclick="setIcon(this)">🧪</div>
+          <div class="icon-opt" onclick="setIcon(this)">🌍</div>
+          <div class="icon-opt" onclick="setIcon(this)">✏️</div>
+          <div class="icon-opt" onclick="setIcon(this)">⚛️</div>
+          <div class="icon-opt" onclick="setIcon(this)">📊</div>
+          <div class="icon-opt" onclick="setIcon(this)">🎨</div>
+          <div class="icon-opt" onclick="setIcon(this)">💻</div>
+          <div class="icon-opt" onclick="setIcon(this)">🎭</div>
+        </div>
+      </div>
+
+      <div class="sdiv anim" style="animation-delay:.16s">Configurações</div>
+      <div class="three-col anim" style="animation-delay:.18s">
+        <div class="field-group"><div class="fl">Carga horária</div><input class="finput" value="80h"></div>
+        <div class="field-group"><div class="fl">Nível</div><select class="finput" style="cursor:pointer"><option>Ensino Médio</option><option>Fundamental</option><option>Superior</option></select></div>
+        <div class="field-group"><div class="fl">Status</div><select class="finput" style="cursor:pointer"><option>Ativa</option><option>Inativa</option><option>Rascunho</option></select></div>
+      </div>
+
+      <div class="sdiv anim" style="animation-delay:.2s">Tópicos / Conteúdos (4)</div>
+      <div class="anim" style="animation-delay:.22s">
+        <div class="content-block">
+          <div class="cb-head"><div class="cb-num">01</div><input class="cb-input" value="Citologia — Estrutura e função das células"><button class="cb-del">✕</button></div>
+          <div class="cb-tags"><span class="ctag on">Teoria</span><span class="ctag">Prática</span><span class="ctag on">Exercícios</span><span class="ctag">Quiz IA</span></div>
+        </div>
+        <div class="content-block">
+          <div class="cb-head"><div class="cb-num">02</div><input class="cb-input" value="Divisão Celular — Mitose e Meiose"><button class="cb-del">✕</button></div>
+          <div class="cb-tags"><span class="ctag on">Teoria</span><span class="ctag on">Quiz IA</span><span class="ctag">Exercícios</span></div>
+        </div>
+        <div class="content-block">
+          <div class="cb-head"><div class="cb-num">03</div><input class="cb-input" value="Genética — Leis de Mendel"><button class="cb-del">✕</button></div>
+          <div class="cb-tags"><span class="ctag on">Teoria</span><span class="ctag">Prática</span><span class="ctag on">Exercícios</span></div>
+        </div>
+        <div class="content-block" style="margin-bottom:12px">
+          <div class="cb-head"><div class="cb-num">04</div><input class="cb-input" placeholder="Novo tópico..."><button class="cb-del">✕</button></div>
+          <div class="cb-tags"><span class="ctag">Teoria</span><span class="ctag">Prática</span><span class="ctag">Exercícios</span><span class="ctag">Quiz IA</span></div>
+        </div>
+        <button class="btn-add-c">+ Adicionar tópico</button>
+      </div>
+      <div style="height:80px"></div>
+    </div>
+  </div>
+</div>
+<div class="fsave">
+  <button class="btn-disc">Descartar</button>
+  <button class="btn-save">✓ Salvar Matéria</button>
+</div>
+<script>
+  document.querySelectorAll('.mat-item').forEach(i => { i.addEventListener('click', function() { document.querySelectorAll('.mat-item').forEach(x => x.classList.remove('active')); this.classList.add('active'); }); });
+  document.querySelectorAll('.ctag').forEach(t => { t.addEventListener('click', function() { this.classList.toggle('on'); }); });
+  function setSwatch(el) { document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel')); el.classList.add('sel'); }
+  function setIcon(el) { document.querySelectorAll('.icon-opt').forEach(i => i.classList.remove('sel')); el.classList.add('sel'); }
+</script>
+</body>
+</html>
