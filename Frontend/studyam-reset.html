@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Recuperar Senha</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07091a;
+  --surface: #0d1226;
+  --surface2: #131830;
+  --border: rgba(255,255,255,0.07);
+  --blue: #2d6aff;
+  --blue-l: #6696ff;
+  --blue-d: rgba(45,106,255,0.12);
+  --orange: #ff6b1a;
+  --orange-l: #ffaa44;
+  --white: #eef2ff;
+  --muted: #5e6f96;
+  --muted2: #8896bb;
+}
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--white);
+  overflow: hidden;
+  position: relative;
+}
+
+/* BG atmosphere */
+.bg-orb {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+  filter: blur(90px);
+}
+.orb1 {
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse, rgba(45,106,255,0.13) 0%, transparent 70%);
+  top: -150px; left: -100px;
+  animation: drift1 14s ease-in-out infinite;
+}
+.orb2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(ellipse, rgba(255,107,26,0.1) 0%, transparent 70%);
+  bottom: -100px; right: -100px;
+  animation: drift2 18s ease-in-out infinite;
+}
+.orb3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(ellipse, rgba(45,106,255,0.07) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  animation: pulse 8s ease-in-out infinite;
+}
+@keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,30px)} }
+@keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-40px)} }
+@keyframes pulse { 0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)} }
+
+/* Stars */
+.stars {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 8%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 12%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 6%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(2px 2px at 45% 25%, rgba(91,159,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 40%, rgba(255,170,68,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 15% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 35% 90%, rgba(91,159,255,0.5) 0%, transparent 100%);
+}
+
+/* Glow top line */
+.glow-line {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 100;
+  background: linear-gradient(90deg, transparent, var(--blue) 35%, var(--orange) 65%, transparent);
+}
+
+/* CARD */
+.card-wrap {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 440px;
+  padding: 20px;
+  animation: popIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.93) translateY(24px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* LOGO */
+.logo {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 36px;
+  animation: fadeDown 0.5s 0.1s ease both;
+}
+.logo-box {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--blue), var(--orange));
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 24px rgba(45,106,255,0.5), 0 0 48px rgba(255,107,26,0.15);
+}
+.logo-name {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+  letter-spacing: -0.5px; color: var(--white);
+}
+.logo-name span { color: var(--orange-l); }
+
+/* MAIN CARD */
+.card {
+  background: rgba(13,18,38,0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 28px; padding: 44px 40px;
+  backdrop-filter: blur(24px);
+  box-shadow:
+    0 0 0 1px rgba(45,106,255,0.08),
+    0 40px 80px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ENVELOPE ICON */
+.icon-wrap {
+  display: flex; justify-content: center; margin-bottom: 28px;
+  animation: fadeDown 0.5s 0.2s ease both;
+}
+.envelope {
+  width: 72px; height: 72px;
+  position: relative;
+  animation: floatIcon 4s ease-in-out infinite;
+}
+@keyframes floatIcon {
+  0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}
+}
+.env-body {
+  width: 72px; height: 52px;
+  background: linear-gradient(135deg, rgba(45,106,255,0.25), rgba(45,106,255,0.1));
+  border: 1.5px solid rgba(45,106,255,0.4);
+  border-radius: 10px;
+  position: absolute; bottom: 0;
+  box-shadow: 0 0 24px rgba(45,106,255,0.25), 0 0 48px rgba(45,106,255,0.1);
+}
+.env-flap {
+  width: 0; height: 0;
+  border-left: 36px solid transparent;
+  border-right: 36px solid transparent;
+  border-top: 22px solid rgba(45,106,255,0.35);
+  position: absolute; top: 8px; left: 0;
+  filter: drop-shadow(0 2px 8px rgba(45,106,255,0.3));
+}
+.env-line1 {
+  position: absolute; bottom: 18px; left: 12px; right: 12px;
+  height: 2px; background: rgba(45,106,255,0.3); border-radius: 2px;
+}
+.env-line2 {
+  position: absolute; bottom: 11px; left: 12px; width: 24px;
+  height: 2px; background: rgba(45,106,255,0.2); border-radius: 2px;
+}
+.env-spark {
+  position: absolute; top: -6px; right: -6px;
+  width: 18px; height: 18px;
+  background: linear-gradient(135deg, var(--orange), var(--orange-l));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  box-shadow: 0 0 12px rgba(255,107,26,0.6);
+  animation: sparkPulse 2s ease-in-out infinite;
+}
+@keyframes sparkPulse {
+  0%,100%{transform:scale(1)} 50%{transform:scale(1.15)}
+}
+
+/* TEXTS */
+.card-title {
+  font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800;
+  color: var(--white); text-align: center; letter-spacing: -0.5px;
+  margin-bottom: 10px;
+  animation: fadeUp 0.5s 0.25s ease both;
+}
+.card-sub {
+  font-size: 14px; color: var(--muted2); text-align: center; line-height: 1.6;
+  margin-bottom: 32px;
+  animation: fadeUp 0.5s 0.3s ease both;
+}
+.card-sub strong { color: var(--blue-l); font-weight: 500; }
+
+/* FIELD */
+.field { margin-bottom: 20px; animation: fadeUp 0.5s 0.35s ease both; }
+.field label {
+  display: block; font-size: 12px; font-weight: 500;
+  color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+.input-wrap { position: relative; }
+.input-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; pointer-events: none;
+}
+.field input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.09);
+  border-radius: 13px; padding: 13px 16px 13px 42px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--white);
+  outline: none; transition: all 0.2s;
+}
+.field input::placeholder { color: rgba(136,150,187,0.5); }
+.field input:focus {
+  border-color: var(--blue);
+  background: rgba(45,106,255,0.07);
+  box-shadow: 0 0 0 3px rgba(45,106,255,0.12);
+}
+
+/* BTN */
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, var(--blue) 0%, #1a4fd6 100%);
+  border: none; border-radius: 14px; padding: 14px;
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+  color: white; cursor: pointer; transition: all 0.25s;
+  box-shadow: 0 8px 24px rgba(45,106,255,0.35);
+  letter-spacing: 0.3px; margin-bottom: 20px;
+  animation: fadeUp 0.5s 0.4s ease both;
+  position: relative; overflow: hidden;
+}
+.btn-submit::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0; transition: opacity 0.2s;
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(45,106,255,0.5); }
+.btn-submit:hover::before { opacity: 1; }
+.btn-submit:active { transform: translateY(0); }
+
+/* BACK LINK */
+.back-link {
+  text-align: center; font-size: 13px; color: var(--muted2);
+  animation: fadeUp 0.5s 0.45s ease both;
+}
+.back-link a {
+  color: var(--blue-l); text-decoration: none; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: color 0.2s;
+}
+.back-link a:hover { color: var(--orange-l); }
+
+/* STEPS HINT */
+.steps-hint {
+  display: flex; gap: 8px; justify-content: center;
+  margin-top: 28px; padding-top: 24px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp 0.5s 0.5s ease both;
+}
+.step {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex: 1;
+}
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  transition: all 0.2s;
+}
+.step-dot.active {
+  background: var(--blue); color: white;
+  box-shadow: 0 0 16px rgba(45,106,255,0.5);
+}
+.step-dot.done {
+  background: rgba(34,211,160,0.2); color: #22d3a0;
+  border: 1.5px solid rgba(34,211,160,0.3);
+}
+.step-dot.pending {
+  background: var(--surface2); color: var(--muted);
+  border: 1.5px solid var(--border);
+}
+.step-line { flex: 1; height: 1px; background: var(--border); margin-top: 14px; }
+.step-label { font-size: 10px; color: var(--muted); text-align: center; white-space: nowrap; }
+.step.active .step-label { color: var(--blue-l); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* SUCCESS STATE */
+.success-state { display: none; text-align: center; animation: fadeUp 0.5s ease both; }
+.success-icon { font-size: 48px; margin-bottom: 16px; animation: bounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes bounce { from{transform:scale(0)} to{transform:scale(1)} }
+.success-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+.success-sub { font-size: 14px; color: var(--muted2); line-height: 1.6; }
+.success-sub em { color: var(--blue-l); font-style: normal; }
+</style>
+</head>
+<body>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+<div class="stars"></div>
+<div class="glow-line"></div>
+
+<div class="card-wrap">
+  <!-- LOGO -->
+  <div class="logo">
+    <div class="logo-box">🦉</div>
+    <div class="logo-name">Study<span>AM</span></div>
+  </div>
+
+  <!-- CARD -->
+  <div class="card">
+
+    <!-- DEFAULT STATE -->
+    <div id="default-state">
+      <div class="icon-wrap">
+        <div class="envelope">
+          <div class="env-body">
+            <div class="env-line1"></div>
+            <div class="env-line2"></div>
+          </div>
+          <div class="env-flap"></div>
+          <div class="env-spark">✦</div>
+        </div>
+      </div>
+
+      <div class="card-title">Recuperar senha</div>
+      <div class="card-sub">
+        Informe seu e-mail cadastrado e enviaremos um<br>
+        <strong>link de redefinição</strong> em instantes.
+      </div>
+
+      <div class="field">
+        <label>Endereço de e-mail</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="email" id="email-input" placeholder="seu@email.com">
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="handleSubmit()">
+        Enviar link de redefinição →
+      </button>
+
+      <div class="back-link">
+        <a href="#">← Voltar para o login</a>
+      </div>
+
+      <div class="steps-hint">
+        <div class="step active">
+          <div class="step-dot active">1</div>
+          <div class="step-label">Informe o e-mail</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-dot pending">2</div>
+          <div class="step-label">Verifique a caixa</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-dot pending">3</div>
+          <div class="step-label">Crie nova senha</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-state" id="success-state">
+      <div class="success-icon">📬</div>
+      <div class="success-title">E-mail enviado!</div>
+      <div class="success-sub">
+        Enviamos o link para<br>
+        <em id="email-display">seu@email.com</em><br><br>
+        Verifique sua caixa de entrada e spam.
+      </div>
+      <div style="margin-top:28px">
+        <div class="back-link"><a href="#">← Voltar para o login</a></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function handleSubmit() {
+  const email = document.getElementById('email-input').value;
+  if (!email) { document.getElementById('email-input').focus(); return; }
+  document.getElementById('default-state').style.display = 'none';
+  const s = document.getElementById('success-state');
+  s.style.display = 'block';
+  document.getElementById('email-display').textContent = email;
+}
+</script>
+</body>
+</html>
