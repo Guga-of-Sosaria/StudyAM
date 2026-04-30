@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #060917; --s1: #0b1023; --s2: #101828; --s3: #18203a;
+  --border: rgba(255,255,255,0.07);
+  --blue: #2d6aff; --blue-l: #6696ff; --blue-d: rgba(45,106,255,0.13);
+  --orange: #ff6b1a; --orange-l: #ffaa44; --orange-d: rgba(255,107,26,0.12);
+  --green: #22d3a0; --green-d: rgba(34,211,160,0.1);
+  --gold: #ffd166; --gold-d: rgba(255,209,102,0.1);
+  --red: #ff4d6d; --purple: #a78bfa;
+  --white: #eef2ff; --muted: #4a5a84; --muted2: #7a8ab2;
+}
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  min-height: 100vh; display: flex;
+  color: var(--white);
+}
+
+.bg-glow { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 75% 20%, rgba(45,106,255,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 10% 85%, rgba(255,107,26,0.06) 0%, transparent 60%); }
+.dot-grid { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 10%, transparent 80%); }
+
+/* TOPBAR */
+.topbar { position: fixed; top: 0; left: 0; right: 0; height: 58px; z-index: 100;
+  background: rgba(6,9,23,0.92); border-bottom: 1px solid var(--border); backdrop-filter: blur(24px);
+  display: flex; align-items: center; padding: 0 22px; gap: 14px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--orange)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 16px rgba(45,106,255,0.4); }
+.logo-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--white); letter-spacing: -0.4px; }
+.logo-name b { color: var(--orange-l); }
+.t-div { width: 1px; height: 22px; background: var(--border); }
+.ai-pill { display: flex; align-items: center; gap: 5px; background: var(--blue-d); border: 1px solid rgba(45,106,255,0.25); border-radius: 20px; padding: 4px 11px; font-size: 11px; font-weight: 600; color: var(--blue-l); }
+.ai-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(34,211,160,0.7); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.t-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.t-sm-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted2); transition: all 0.2s; }
+.t-sm-btn:hover { background: var(--s3); color: var(--white); }
+.glow-line { position: fixed; top: 58px; left: 0; right: 0; height: 1px; z-index: 99;
+  background: linear-gradient(90deg, transparent, rgba(45,106,255,0.45) 40%, rgba(255,107,26,0.3) 70%, transparent); }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed; top: 59px; left: 0; bottom: 0;
+  width: 262px; z-index: 80;
+  background: var(--s1); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── TOOLS GRID ── */
+.tools-section {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tools-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 4px; margin-bottom: 10px;
+}
+.tools-title {
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1.3px;
+}
+.tools-collapse {
+  width: 20px; height: 20px; border-radius: 5px; border: none; background: transparent;
+  cursor: pointer; color: var(--muted); font-size: 11px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.tools-collapse:hover { color: var(--white); background: var(--s3); }
+
+/* 2-column grid of tool buttons */
+.tools-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.tool-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+  padding: 10px 11px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: transparent; cursor: pointer; transition: all 0.22s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.tool-btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+  opacity: 0; transition: opacity 0.2s;
+}
+.tool-btn:hover { background: var(--s2); transform: translateY(-1px); }
+.tool-btn:hover::after { opacity: 1; }
+.tool-btn.active {
+  border-color: rgba(45,106,255,0.3);
+  background: var(--blue-d);
+  box-shadow: 0 0 16px rgba(45,106,255,0.1);
+}
+
+.tb-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+.tb-icon { font-size: 18px; line-height: 1; }
+.tb-badge {
+  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px;
+  flex-shrink: 0; line-height: 1.4;
+}
+.tb-label {
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--muted2); line-height: 1.2; transition: color 0.2s;
+}
+.tool-btn:hover .tb-label, .tool-btn.active .tb-label { color: var(--white); }
+
+/* color per tool */
+.tool-btn[data-tool="cronogramas"]:hover, .tool-btn[data-tool="cronogramas"].active { border-color: rgba(45,106,255,0.3); background: rgba(45,106,255,0.08); }
+.tool-btn[data-tool="lembretes"]:hover, .tool-btn[data-tool="lembretes"].active { border-color: rgba(255,107,26,0.3); background: rgba(255,107,26,0.08); }
+.tool-btn[data-tool="tarefas"]:hover, .tool-btn[data-tool="tarefas"].active { border-color: rgba(34,211,160,0.3); background: rgba(34,211,160,0.07); }
+.tool-btn[data-tool="materias"]:hover, .tool-btn[data-tool="materias"].active { border-color: rgba(255,209,102,0.3); background: rgba(255,209,102,0.07); }
+.tool-btn[data-tool="quiz"]:hover, .tool-btn[data-tool="quiz"].active { border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); }
+
+/* Full-width quiz button */
+.tool-btn-wide {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: transparent; cursor: pointer; transition: all 0.22s;
+  width: 100%; margin-top: 6px;
+}
+.tool-btn-wide:hover { background: rgba(167,139,250,0.08); border-color: rgba(167,139,250,0.3); transform: translateY(-1px); }
+.tool-btn-wide.active { border-color: rgba(167,139,250,0.35); background: rgba(167,139,250,0.1); }
+.tbw-icon { font-size: 17px; flex-shrink: 0; }
+.tbw-text { flex: 1; }
+.tbw-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted2); display: block; transition: color 0.2s; }
+.tool-btn-wide:hover .tbw-label, .tool-btn-wide.active .tbw-label { color: var(--white); }
+.tbw-desc { font-size: 10px; color: var(--muted); display: block; margin-top: 1px; }
+.tbw-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; background: rgba(167,139,250,0.15); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+
+/* ── NOVO CHAT ── */
+.new-chat-wrap {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.btn-new {
+  width: 100%; background: linear-gradient(135deg, var(--blue), #1a4fd6);
+  border: none; border-radius: 10px; padding: 9px 14px;
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
+  color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center;
+  transition: all 0.22s; box-shadow: 0 4px 14px rgba(45,106,255,0.3);
+}
+.btn-new:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(45,106,255,0.5); }
+
+/* ── HISTORY ── */
+.hist-label { padding: 10px 14px 4px; font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.hist-list { flex: 1; overflow-y: auto; padding: 4px 8px; }
+.hist-list::-webkit-scrollbar { width: 3px; }
+.hist-list::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+.hist-item { padding: 9px 10px; border-radius: 9px; cursor: pointer; transition: all 0.2s; margin-bottom: 2px; border: 1.5px solid transparent; }
+.hist-item:hover { background: var(--s3); }
+.hist-item.on { background: var(--blue-d); border-color: rgba(45,106,255,0.25); }
+.hi-title { font-size: 12px; font-weight: 500; color: var(--white); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hi-meta { font-size: 10px; color: var(--muted2); display: flex; justify-content: space-between; }
+
+/* ── FOOTER ── */
+.sb-foot { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.u-row { display: flex; align-items: center; gap: 9px; }
+.u-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #1040c8); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; border: 2px solid rgba(45,106,255,0.3); flex-shrink: 0; }
+.u-info { flex: 1; min-width: 0; }
+.u-name { font-size: 12px; font-weight: 600; color: var(--white); }
+.u-role { font-size: 10px; color: var(--muted2); }
+.u-more { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted2); transition: all 0.2s; }
+.u-more:hover { background: var(--s3); color: var(--white); }
+
+/* MAIN CONTENT AREA */
+.main-area {
+  margin-left: 262px; margin-top: 59px;
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; z-index: 1; padding: 40px;
+  text-align: center;
+}
+.ma-icon { width: 64px; height: 64px; background: linear-gradient(135deg, var(--blue), var(--orange)); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; box-shadow: 0 0 32px rgba(45,106,255,0.4), 0 0 64px rgba(255,107,26,0.15); animation: float 4s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.ma-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--white); letter-spacing: -0.5px; margin-bottom: 8px; }
+.ma-title em { font-style: normal; background: linear-gradient(90deg, var(--blue-l), var(--orange-l)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.ma-sub { font-size: 14px; color: var(--muted2); line-height: 1.7; max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="dot-grid"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><div class="logo-icon">🦉</div><div class="logo-name">Study<b>AM</b></div></div>
+  <div class="t-div"></div>
+  <div class="ai-pill"><div class="ai-dot"></div>Assistente IA</div>
+  <div class="t-right">
+    <button class="t-sm-btn">⚙</button>
+    <button class="t-sm-btn">⛶</button>
+  </div>
+</div>
+<div class="glow-line"></div>
+
+<div style="display:flex;width:100%">
+
+  <!-- ───── SIDEBAR ───── -->
+  <div class="sidebar">
+
+    <!-- ── TOOLS GRID ── -->
+    <div class="tools-section">
+      <div class="tools-header">
+        <span class="tools-title">Ferramentas</span>
+        <button class="tools-collapse" title="Recolher">−</button>
+      </div>
+
+      <div class="tools-grid">
+
+        <a href="studyam-cronogramas.html" class="tool-btn" data-tool="cronogramas">
+          <div class="tb-top">
+            <span class="tb-icon">📅</span>
+            <span class="tb-badge" style="background:rgba(45,106,255,0.15);color:var(--blue-l)">3</span>
+          </div>
+          <span class="tb-label">Cronogramas</span>
+        </a>
+
+        <a href="studyam-lembretes.html" class="tool-btn" data-tool="lembretes">
+          <div class="tb-top">
+            <span class="tb-icon">🔔</span>
+            <span class="tb-badge" style="background:rgba(255,77,109,0.15);color:var(--red)">2 !</span>
+          </div>
+          <span class="tb-label">Lembretes</span>
+        </a>
+
+        <a href="studyam-tarefas.html" class="tool-btn" data-tool="tarefas">
+          <div class="tb-top">
+            <span class="tb-icon">✅</span>
+            <span class="tb-badge" style="background:rgba(34,211,160,0.12);color:var(--green)">8</span>
+          </div>
+          <span class="tb-label">Tarefas</span>
+        </a>
+
+        <a href="studyam-materias.html" class="tool-btn" data-tool="materias">
+          <div class="tb-top">
+            <span class="tb-icon">📚</span>
+          </div>
+          <span class="tb-label">Matérias</span>
+        </a>
+
+      </div>
+
+      <!-- Quiz - full width highlight -->
+      <a href="studyam-quiz.html" class="tool-btn" data-tool="quizzes">
+        <span class="tbw-icon">🧠</span>
+        <div class="tbw-text">
+          <span class="tbw-label">Criar Quiz com IA</span>
+          <span class="tbw-desc">Gerar questões automaticamente</span>
+        </div>
+        <span class="tbw-badge">✦ IA</span>
+      </a>
+    </div>
+
+    <!-- ── NOVO CHAT ── -->
+    <div class="new-chat-wrap">
+      <button class="btn-new">✦ Novo Chat</button>
+    </div>
+
+    <!-- ── HISTÓRICO ── -->
+    <div class="hist-label">Hoje</div>
+    <div class="hist-list">
+      <div class="hist-item on">
+        <div class="hi-title">Como resolver equações do 2º grau?</div>
+        <div class="hi-meta"><span>Matemática</span><span>14:32</span></div>
+      </div>
+      <div class="hist-item" onclick="setHist(this)">
+        <div class="hi-title">Diferença entre mitose e meiose</div>
+        <div class="hi-meta"><span>Biologia</span><span>11:15</span></div>
+      </div>
+      <div class="hist-item" onclick="setHist(this)">
+        <div class="hi-title">Revolução Industrial — resumo</div>
+        <div class="hi-meta"><span>História</span><span>09:40</span></div>
+      </div>
+      <div class="hist-label" style="padding-left:4px;margin-top:6px">Ontem</div>
+      <div class="hist-item" onclick="setHist(this)">
+        <div class="hi-title">Concordância verbal — exercícios</div>
+        <div class="hi-meta"><span>Português</span><span>18:22</span></div>
+      </div>
+      <div class="hist-item" onclick="setHist(this)">
+        <div class="hi-title">Leis de Newton explicadas</div>
+        <div class="hi-meta"><span>Física</span><span>16:05</span></div>
+      </div>
+      <div class="hist-item" onclick="setHist(this)">
+        <div class="hi-title">Tabela periódica — grupos principais</div>
+        <div class="hi-meta"><span>Química</span><span>14:50</span></div>
+      </div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <div class="sb-foot">
+      <div class="u-row">
+        <div class="u-av">JP</div>
+        <div class="u-info">
+          <div class="u-name">João Pedro</div>
+          <div class="u-role">Aluno · 3º Ano</div>
+        </div>
+        <button class="u-more">⋯</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <div class="ma-icon">🦉</div>
+    <div class="ma-title">Olá! Sou o <em>StudyBot.</em></div>
+    <div class="ma-sub">Use o menu ao lado para acessar cronogramas, lembretes, tarefas, matérias e quizzes — ou comece uma conversa!</div>
+  </div>
+
+</div>
+
+<script>
+  function setTool(btn) {
+    document.querySelectorAll('.tool-btn, .tool-btn-wide').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function setToolWide(btn) {
+    document.querySelectorAll('.tool-btn, .tool-btn-wide').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  function setHist(el) {
+    document.querySelectorAll('.hist-item').forEach(i => i.classList.remove('on'));
+    el.classList.add('on');
+  }
+</script>
+</body>
+</html>
