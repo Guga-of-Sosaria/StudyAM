@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Lista de Tarefas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07091a; --s1: #0d1226; --s2: #111828; --s3: #18203a;
+  --border: rgba(255,255,255,0.07);
+  --blue: #2d6aff; --blue-l: #6696ff; --blue-d: rgba(45,106,255,0.13);
+  --orange: #ff6b1a; --orange-l: #ffaa44; --orange-d: rgba(255,107,26,0.12);
+  --green: #22d3a0; --green-d: rgba(34,211,160,0.12);
+  --red: #ff4d6d; --red-d: rgba(255,77,109,0.1);
+  --gold: #ffd166; --gold-d: rgba(255,209,102,0.1);
+  --purple: #a78bfa; --purple-d: rgba(167,139,250,0.1);
+  --white: #eef2ff; --muted: #4e5f88; --muted2: #7e8eb5;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; color: var(--white); overflow: hidden; }
+
+.bg-atm { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 45% at 80% 10%, rgba(45,106,255,0.1) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgba(255,107,26,0.07) 0%, transparent 60%); }
+
+/* TOPBAR */
+.topbar { height: 56px; display: flex; align-items: center; padding: 0 24px; gap: 14px; background: rgba(7,9,26,0.92); border-bottom: 1px solid var(--border); backdrop-filter: blur(20px); flex-shrink: 0; z-index: 50; position: relative; }
+.t-logo { display: flex; align-items: center; gap: 9px; font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+.t-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--orange)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 16px rgba(45,106,255,0.4); }
+.t-dot { color: var(--orange-l); }
+.t-sep { width: 1px; height: 22px; background: var(--border); }
+.t-crumb { font-size: 13px; color: var(--muted2); }
+.t-cur { color: var(--white); font-weight: 500; }
+.t-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.t-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #1040c8); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2px solid rgba(45,106,255,0.35); cursor: pointer; }
+.glow-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(45,106,255,0.5) 40%, rgba(255,107,26,0.35) 70%, transparent); flex-shrink: 0; z-index: 49; }
+
+/* LAYOUT */
+.layout { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
+
+/* SIDEBAR */
+.sb { width: 256px; flex-shrink: 0; background: var(--s1); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+
+.sb-profile { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); }
+.sb-greeting { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 2px; }
+.sb-date { font-size: 11px; color: var(--muted2); }
+.sb-ring-wrap { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+.ring-svg { flex-shrink: 0; }
+.ring-info { flex: 1; }
+.ring-pct { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; background: linear-gradient(90deg, var(--blue-l), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.ring-label { font-size: 11px; color: var(--muted2); }
+
+.sb-lists { flex: 1; overflow-y: auto; padding: 8px; }
+.sb-lists::-webkit-scrollbar { width: 3px; }
+.sb-lists::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+
+.sb-sec { padding: 8px 10px 4px; font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.list-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; margin-bottom: 2px; }
+.list-item:hover { background: var(--s3); }
+.list-item.active { background: var(--blue-d); border-color: rgba(45,106,255,0.25); }
+.li-color { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.li-name { font-size: 13px; color: var(--muted2); flex: 1; font-weight: 500; }
+.list-item.active .li-name { color: var(--white); }
+.li-count { font-size: 10px; background: var(--s3); padding: 1px 6px; border-radius: 10px; color: var(--muted); }
+.list-item.active .li-count { background: rgba(45,106,255,0.25); color: var(--blue-l); }
+
+.btn-new-list { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 9px; cursor: pointer; font-size: 12px; color: var(--muted); border: 1.5px dashed rgba(255,255,255,0.08); margin: 4px 8px; background: transparent; transition: all 0.2s; font-family: 'DM Sans', sans-serif; width: calc(100% - 16px); }
+.btn-new-list:hover { border-color: rgba(45,106,255,0.3); color: var(--blue-l); background: var(--blue-d); }
+
+.sb-foot { padding: 12px 14px; border-top: 1px solid var(--border); }
+.sb-foot-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sfs { background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.sfs-v { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; background: linear-gradient(90deg, var(--blue-l), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sfs-l { font-size: 10px; color: var(--muted); }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* TOP BAR OF MAIN */
+.main-header { padding: 20px 32px 0; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; animation: fadeUp 0.4s ease both; }
+.mh-left { }
+.mh-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.mh-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mh-sub { font-size: 13px; color: var(--muted2); }
+.mh-right { display: flex; gap: 8px; align-items: center; }
+.mh-btn { height: 32px; padding: 0 13px; border-radius: 8px; border: 1px solid var(--border); background: var(--s1); font-size: 12px; font-weight: 600; color: var(--muted2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+.mh-btn:hover { background: var(--s3); color: var(--white); }
+.mh-btn.pri { background: linear-gradient(135deg, var(--blue), #1a4fd6); color: white; border: none; box-shadow: 0 3px 12px rgba(45,106,255,0.3); }
+.mh-btn.pri:hover { transform: translateY(-1px); }
+
+/* PROGRESS BAR */
+.prog-section { padding: 16px 32px; flex-shrink: 0; animation: fadeUp 0.4s 0.05s ease both; }
+.prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.prog-label { font-size: 12px; color: var(--muted2); }
+.prog-nums { font-size: 12px; color: var(--muted2); }
+.prog-nums b { color: var(--green); font-weight: 700; }
+.prog-bar { height: 5px; background: var(--s3); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), #55f0c8); transition: width 0.8s ease; }
+
+/* QUICK ADD */
+.quick-add { margin: 0 32px 16px; display: flex; gap: 10px; align-items: center; background: var(--s1); border: 1.5px solid var(--border); border-radius: 13px; padding: 12px 16px; transition: border-color 0.2s; flex-shrink: 0; animation: fadeUp 0.4s 0.08s ease both; }
+.quick-add:focus-within { border-color: rgba(45,106,255,0.4); box-shadow: 0 0 0 3px rgba(45,106,255,0.07); }
+.qa-check-placeholder { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--border); flex-shrink: 0; }
+.qa-input { flex: 1; background: transparent; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--white); outline: none; }
+.qa-input::placeholder { color: var(--muted); }
+.qa-meta { display: flex; gap: 6px; align-items: center; }
+.qa-m-btn { height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border); background: transparent; font-size: 11px; color: var(--muted2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.18s; display: flex; align-items: center; gap: 3px; }
+.qa-m-btn:hover { background: var(--s3); color: var(--white); }
+.qa-send { width: 30px; height: 30px; border-radius: 8px; background: var(--blue); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; box-shadow: 0 3px 10px rgba(45,106,255,0.35); }
+.qa-send:hover { transform: scale(1.06); }
+
+/* FILTER TABS */
+.filter-tabs { display: flex; gap: 4px; padding: 0 32px; margin-bottom: 14px; flex-shrink: 0; animation: fadeUp 0.4s 0.1s ease both; }
+.ftab { height: 30px; padding: 0 14px; border-radius: 8px; border: none; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+.ftab:hover { color: var(--white); background: var(--s3); }
+.ftab.active { background: var(--s3); color: var(--white); }
+.ftab-count { font-size: 10px; background: var(--s2); padding: 1px 5px; border-radius: 8px; }
+
+/* TASKS AREA */
+.tasks-scroll { flex: 1; overflow-y: auto; padding: 0 32px 32px; }
+.tasks-scroll::-webkit-scrollbar { width: 4px; }
+.tasks-scroll::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+
+/* GROUP */
+.task-group { margin-bottom: 24px; }
+.tg-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+.tg-arrow { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+.tg-name { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; }
+.tg-line { flex: 1; height: 1px; background: var(--border); }
+.tg-cnt { font-size: 10px; background: var(--s3); padding: 1px 6px; border-radius: 10px; color: var(--muted2); }
+
+/* TASK ROW */
+.task-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 14px; border-radius: 11px; cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; margin-bottom: 3px; position: relative; animation: fadeUp 0.35s ease both; }
+.task-row:hover { background: var(--s2); border-color: rgba(255,255,255,0.05); }
+.task-row.done { opacity: 0.5; }
+.task-row.done .task-title { text-decoration: line-through; color: var(--muted2); }
+
+/* Checkbox */
+.task-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; flex-shrink: 0; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.22s; }
+.task-check:hover { border-color: var(--blue); background: var(--blue-d); }
+.task-row.done .task-check { background: rgba(34,211,160,0.15); border-color: rgba(34,211,160,0.4); color: var(--green); }
+
+/* Priority dot */
+.prio-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-size: 14px; color: var(--white); font-weight: 500; margin-bottom: 3px; line-height: 1.4; }
+.task-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.task-date { font-size: 11px; color: var(--muted2); display: flex; align-items: center; gap: 3px; }
+.task-date.overdue { color: var(--red); }
+.t-tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+.tag-bio { background: rgba(34,211,160,0.12); color: var(--green); border: 1px solid rgba(34,211,160,0.2); }
+.tag-mat { background: var(--blue-d); color: var(--blue-l); border: 1px solid rgba(45,106,255,0.2); }
+.tag-por { background: var(--orange-d); color: var(--orange-l); border: 1px solid rgba(255,107,26,0.2); }
+.tag-qui { background: var(--purple-d); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.tag-fis { background: var(--gold-d); color: var(--gold); border: 1px solid rgba(255,209,102,0.2); }
+.tag-pes { background: rgba(255,77,109,0.1); color: var(--red); border: 1px solid rgba(255,77,109,0.2); }
+
+.task-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
+.task-row:hover .task-actions { opacity: 1; }
+.ta-btn { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); transition: all 0.18s; }
+.ta-btn:hover { background: var(--s3); color: var(--white); }
+.ta-btn.del:hover { background: var(--red-d); border-color: rgba(255,77,109,0.3); color: var(--red); }
+
+/* Subtask indent */
+.subtask-row { margin-left: 32px; }
+.subtask-row .task-title { font-size: 13px; color: var(--muted2); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="bg-atm"></div>
+
+<div class="topbar">
+  <div class="t-logo"><div class="t-icon">🦉</div>Study<span class="t-dot">AM</span></div>
+  <div class="t-sep"></div>
+  <div class="t-crumb">Painel › <span class="t-cur">Tarefas</span></div>
+  <div class="t-right"><div class="t-avatar">JP</div></div>
+</div>
+<div class="glow-line"></div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-profile">
+      <div class="sb-greeting">Olá, João! 👋</div>
+      <div class="sb-date">Terça, 29 de abril</div>
+      <div class="sb-ring-wrap">
+        <svg class="ring-svg" width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+          <circle cx="26" cy="26" r="21" fill="none" stroke="url(#rg)" stroke-width="4" stroke-dasharray="131.9" stroke-dashoffset="46.2" stroke-linecap="round" transform="rotate(-90 26 26)"/>
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#2d6aff"/><stop offset="1" stop-color="#ffd166"/></linearGradient></defs>
+        </svg>
+        <div class="ring-info">
+          <div class="ring-pct">65%</div>
+          <div class="ring-label">das tarefas feitas hoje</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-lists">
+      <div class="sb-sec">Minhas listas</div>
+
+      <div class="list-item active">
+        <div class="li-color" style="background:#6696ff"></div>
+        <div class="li-name">Todas as tarefas</div>
+        <div class="li-count">14</div>
+      </div>
+      <div class="list-item">
+        <div class="li-color" style="background:#ff4d6d"></div>
+        <div class="li-name">Urgente / Hoje</div>
+        <div class="li-count">3</div>
+      </div>
+      <div class="list-item">
+        <div class="li-color" style="background:#22d3a0"></div>
+        <div class="li-name">Estudos</div>
+        <div class="li-count">7</div>
+      </div>
+      <div class="list-item">
+        <div class="li-color" style="background:#ffaa44"></div>
+        <div class="li-name">Tarefas escolares</div>
+        <div class="li-count">4</div>
+      </div>
+      <div class="list-item">
+        <div class="li-color" style="background:#a78bfa"></div>
+        <div class="li-name">Pessoal</div>
+        <div class="li-count">2</div>
+      </div>
+      <div class="list-item">
+        <div class="li-color" style="background:#ffd166"></div>
+        <div class="li-name">Projetos</div>
+        <div class="li-count">3</div>
+      </div>
+
+      <button class="btn-new-list">+ Nova lista</button>
+
+      <div class="sb-sec" style="margin-top:8px">Filtros rápidos</div>
+      <div class="list-item"><span>📅</span><div class="li-name">Hoje</div><div class="li-count">5</div></div>
+      <div class="list-item"><span>⭐</span><div class="li-name">Importantes</div><div class="li-count">3</div></div>
+      <div class="list-item"><span>✅</span><div class="li-name">Concluídas</div><div class="li-count">8</div></div>
+    </div>
+
+    <div class="sb-foot">
+      <div class="sb-foot-stats">
+        <div class="sfs"><div class="sfs-v">14</div><div class="sfs-l">Pendentes</div></div>
+        <div class="sfs"><div class="sfs-v">8</div><div class="sfs-l">Feitas hoje</div></div>
+        <div class="sfs"><div class="sfs-v">3</div><div class="sfs-l">Atrasadas</div></div>
+        <div class="sfs"><div class="sfs-v">6</div><div class="sfs-l">Listas</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-header">
+      <div class="mh-left">
+        <div class="mh-title">
+          <div class="mh-dot" style="background:#6696ff;box-shadow:0 0 8px rgba(102,150,255,0.6)"></div>
+          Todas as Tarefas
+        </div>
+        <div class="mh-sub">14 pendentes · 3 para hoje · 3 atrasadas</div>
+      </div>
+      <div class="mh-right">
+        <button class="mh-btn">⇅ Ordenar</button>
+        <button class="mh-btn">🔍 Buscar</button>
+        <button class="mh-btn pri">+ Nova Tarefa</button>
+      </div>
+    </div>
+
+    <div class="prog-section">
+      <div class="prog-row">
+        <span class="prog-label">Progresso geral</span>
+        <span class="prog-nums"><b>8</b> de 22 tarefas concluídas</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:36%"></div></div>
+    </div>
+
+    <div class="quick-add">
+      <div class="qa-check-placeholder"></div>
+      <input class="qa-input" id="qa" placeholder="Adicionar tarefa rápida... (Enter para salvar)" onkeydown="if(event.key==='Enter')addTask()">
+      <div class="qa-meta">
+        <button class="qa-m-btn">📅</button>
+        <button class="qa-m-btn">⚡</button>
+        <button class="qa-m-btn">🏷</button>
+        <button class="qa-send" onclick="addTask()">➤</button>
+      </div>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="setTab(this)">Todas <span class="ftab-count">14</span></button>
+      <button class="ftab" onclick="setTab(this)">Hoje <span class="ftab-count">5</span></button>
+      <button class="ftab" onclick="setTab(this)">Em andamento <span class="ftab-count">6</span></button>
+      <button class="ftab" onclick="setTab(this)">Atrasadas <span class="ftab-count" style="background:rgba(255,77,109,0.15);color:var(--red)">3</span></button>
+      <button class="ftab" onclick="setTab(this)">Concluídas <span class="ftab-count">8</span></button>
+    </div>
+
+    <div class="tasks-scroll" id="tasks-area">
+
+      <!-- GROUP: HOJE -->
+      <div class="task-group">
+        <div class="tg-header" onclick="toggleGroup(this)">
+          <span class="tg-arrow">▼</span>
+          <span class="tg-name">Hoje</span>
+          <div class="tg-line"></div>
+          <span class="tg-cnt">5</span>
+        </div>
+
+        <div class="task-row" style="animation-delay:.05s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--red)"></div>
+          <div class="task-body">
+            <div class="task-title">Revisar capítulo 3 de Biologia para a prova</div>
+            <div class="task-meta">
+              <span class="task-date overdue">⏰ Hoje, 18:00</span>
+              <span class="t-tag tag-bio">Biologia</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row" style="animation-delay:.08s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--orange-l)"></div>
+          <div class="task-body">
+            <div class="task-title">Entregar lista de exercícios de Matemática</div>
+            <div class="task-meta">
+              <span class="task-date">📅 Hoje, 23:59</span>
+              <span class="t-tag tag-mat">Matemática</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row done" style="animation-delay:.11s">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))">✓</div>
+          <div class="prio-dot" style="background:var(--muted)"></div>
+          <div class="task-body">
+            <div class="task-title">Ler resumo de História — Revolução Industrial</div>
+            <div class="task-meta">
+              <span class="task-date">✓ Concluída</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row" style="animation-delay:.13s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--blue-l)"></div>
+          <div class="task-body">
+            <div class="task-title">Assistir videoaula — Reações Orgânicas</div>
+            <div class="task-meta">
+              <span class="task-date">📅 Hoje, 20:00</span>
+              <span class="t-tag tag-qui">Química</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row" style="animation-delay:.15s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--purple)"></div>
+          <div class="task-body">
+            <div class="task-title">Fazer quiz de Biologia no StudyAM</div>
+            <div class="task-meta">
+              <span class="task-date">📅 Hoje</span>
+              <span class="t-tag tag-bio">Biologia</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROUP: PRÓXIMOS DIAS -->
+      <div class="task-group">
+        <div class="tg-header" onclick="toggleGroup(this)">
+          <span class="tg-arrow">▼</span>
+          <span class="tg-name">Próximos dias</span>
+          <div class="tg-line"></div>
+          <span class="tg-cnt">6</span>
+        </div>
+
+        <div class="task-row" style="animation-delay:.17s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--red)"></div>
+          <div class="task-body">
+            <div class="task-title">Prova de Química — Reações Orgânicas</div>
+            <div class="task-meta">
+              <span class="task-date overdue">⚠️ Qui, 30 abr</span>
+              <span class="t-tag tag-qui">Química</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row" style="animation-delay:.19s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--orange-l)"></div>
+          <div class="task-body">
+            <div class="task-title">Redação sobre Meio Ambiente</div>
+            <div class="task-meta">
+              <span class="task-date">📅 Seg, 5 mai</span>
+              <span class="t-tag tag-por">Português</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row" style="animation-delay:.21s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--gold)"></div>
+          <div class="task-body">
+            <div class="task-title">Estudar Leis de Newton para simulado</div>
+            <div class="task-meta">
+              <span class="task-date">📅 Sex, 2 mai</span>
+              <span class="t-tag tag-fis">Física</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+
+        <div class="task-row" style="animation-delay:.23s" onclick="toggleTask(this)">
+          <div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div>
+          <div class="prio-dot" style="background:var(--muted2)"></div>
+          <div class="task-body">
+            <div class="task-title">Comprar caderno novo para anotações</div>
+            <div class="task-meta">
+              <span class="task-date">📅 Sáb, 3 mai</span>
+              <span class="t-tag tag-pes">Pessoal</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="ta-btn">⭐</button>
+            <button class="ta-btn">✎</button>
+            <button class="ta-btn del">✕</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTask(row) {
+  row.classList.toggle('done');
+  const chk = row.querySelector('.task-check');
+  chk.textContent = row.classList.contains('done') ? '✓' : '';
+}
+function toggleGroup(hdr) {
+  const arrow = hdr.querySelector('.tg-arrow');
+  const group = hdr.closest('.task-group');
+  const rows = group.querySelectorAll('.task-row, .subtask-row');
+  const collapsed = arrow.textContent === '▶';
+  arrow.textContent = collapsed ? '▼' : '▶';
+  rows.forEach(r => r.style.display = collapsed ? '' : 'none');
+}
+function setTab(btn) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+function addTask() {
+  const input = document.getElementById('qa');
+  const val = input.value.trim();
+  if (!val) return;
+  const area = document.getElementById('tasks-area');
+  const groups = area.querySelectorAll('.task-group');
+  const firstGroup = groups[0];
+  const newRow = document.createElement('div');
+  newRow.className = 'task-row';
+  newRow.style.animationDelay = '0s';
+  newRow.innerHTML = `<div class="task-check" onclick="event.stopPropagation();toggleTask(this.closest('.task-row'))"></div><div class="prio-dot" style="background:var(--blue-l)"></div><div class="task-body"><div class="task-title">${val}</div><div class="task-meta"><span class="task-date">📅 Hoje</span></div></div><div class="task-actions"><button class="ta-btn">⭐</button><button class="ta-btn">✎</button><button class="ta-btn del" onclick="this.closest('.task-row').remove()">✕</button></div>`;
+  newRow.addEventListener('click', function() { toggleTask(this); });
+  firstGroup.appendChild(newRow);
+  input.value = '';
+}
+document.querySelectorAll('.ta-btn.del').forEach(b => {
+  b.addEventListener('click', function(e) { e.stopPropagation(); this.closest('.task-row').style.transition = 'all 0.3s'; this.closest('.task-row').style.opacity = '0'; setTimeout(() => this.closest('.task-row')?.remove(), 300); });
+});
+</script>
+</body>
+</html>
