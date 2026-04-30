@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Cronogramas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07091a; --s1: #0d1226; --s2: #111828; --s3: #18203a;
+  --border: rgba(255,255,255,0.07);
+  --blue: #2d6aff; --blue-l: #6696ff; --blue-d: rgba(45,106,255,0.13);
+  --orange: #ff6b1a; --orange-l: #ffaa44; --orange-d: rgba(255,107,26,0.12);
+  --green: #22d3a0; --green-d: rgba(34,211,160,0.12);
+  --red: #ff4d6d; --red-d: rgba(255,77,109,0.1);
+  --gold: #ffd166; --gold-d: rgba(255,209,102,0.1);
+  --purple: #a78bfa; --purple-d: rgba(167,139,250,0.1);
+  --teal: #22d3d3; --teal-d: rgba(34,211,211,0.1);
+  --white: #eef2ff; --muted: #4e5f88; --muted2: #7e8eb5;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; color: var(--white); overflow: hidden; }
+
+.bg-atm { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 40% at 75% 15%, rgba(45,106,255,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 15% 85%, rgba(255,107,26,0.06) 0%, transparent 60%); }
+
+/* TOPBAR */
+.topbar { height: 56px; display: flex; align-items: center; padding: 0 24px; gap: 14px;
+  background: rgba(7,9,26,0.92); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px); flex-shrink: 0; position: relative; z-index: 50; }
+.t-logo { display: flex; align-items: center; gap: 9px; font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+.t-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--orange)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 16px rgba(45,106,255,0.4); }
+.t-dot { color: var(--orange-l); }
+.t-sep { width: 1px; height: 22px; background: var(--border); }
+.t-crumb { font-size: 13px; color: var(--muted2); display: flex; gap: 7px; align-items: center; }
+.t-cur { color: var(--white); font-weight: 500; }
+.t-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.t-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #1040c8); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2px solid rgba(45,106,255,0.35); cursor: pointer; }
+.tbtn { height: 30px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--border); background: transparent; font-size: 12px; font-weight: 600; color: var(--muted2); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+.tbtn:hover { background: var(--s3); color: var(--white); }
+.tbtn.primary { background: linear-gradient(135deg, var(--blue), #1a4fd6); color: white; border: none; box-shadow: 0 3px 12px rgba(45,106,255,0.3); }
+.tbtn.primary:hover { transform: translateY(-1px); }
+.glow-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(45,106,255,0.5) 40%, rgba(255,107,26,0.35) 70%, transparent); flex-shrink: 0; z-index: 49; position: relative; }
+
+/* LAYOUT */
+.layout { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
+
+/* SIDEBAR */
+.sb { width: 268px; flex-shrink: 0; background: var(--s1); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sb-top { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); }
+.sb-top h3 { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; }
+.btn-new { width: 100%; background: linear-gradient(135deg, var(--blue), #1a4fd6); border: none; border-radius: 9px; padding: 9px 14px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; gap: 7px; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 14px rgba(45,106,255,0.3); }
+.btn-new:hover { transform: translateY(-1px); }
+
+.sb-list { flex: 1; overflow-y: auto; padding: 8px; }
+.sb-list::-webkit-scrollbar { width: 3px; }
+.sb-list::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+
+.sched-item { padding: 12px 13px; border-radius: 11px; cursor: pointer; transition: all 0.2s; margin-bottom: 4px; border: 1.5px solid transparent; }
+.sched-item:hover { background: var(--s3); }
+.sched-item.active { background: var(--blue-d); border-color: rgba(45,106,255,0.28); }
+.si-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.si-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--white); }
+.si-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700; }
+.si-meta { display: flex; gap: 8px; font-size: 11px; color: var(--muted2); }
+.si-bar { height: 3px; border-radius: 2px; margin-top: 8px; }
+
+/* Progress ring mini */
+.si-ring { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
+.si-ring svg { transform: rotate(-90deg); }
+.si-ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: var(--white); }
+
+.sb-section-lbl { padding: 10px 14px 4px; font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.sb-footer { padding: 12px 14px; border-top: 1px solid var(--border); }
+.sb-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.sbs { background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; }
+.sbs-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; background: linear-gradient(90deg, var(--blue-l), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sbs-lbl { font-size: 9px; color: var(--muted); margin-top: 1px; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* WEEK HEADER */
+.week-bar { padding: 14px 24px; background: var(--s1); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; flex-shrink: 0; animation: fadeUp 0.4s ease both; }
+.week-nav { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--muted2); transition: all 0.18s; }
+.week-nav:hover { background: var(--s3); color: var(--white); }
+.week-label { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); min-width: 200px; }
+.week-today-btn { height: 28px; padding: 0 12px; border-radius: 7px; border: 1px solid rgba(45,106,255,0.3); background: var(--blue-d); font-size: 11px; font-weight: 600; color: var(--blue-l); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+.week-today-btn:hover { background: rgba(45,106,255,0.2); }
+.week-progress { flex: 1; display: flex; align-items: center; gap: 10px; }
+.wp-label { font-size: 11px; color: var(--muted2); white-space: nowrap; }
+.wp-bar { flex: 1; height: 4px; background: var(--s3); border-radius: 2px; max-width: 200px; }
+.wp-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--blue), var(--blue-l)); }
+.wp-pct { font-size: 11px; color: var(--blue-l); font-weight: 600; }
+
+/* VIEW TABS */
+.view-tabs { display: flex; gap: 2px; margin-left: auto; }
+.view-tab { height: 28px; padding: 0 12px; border-radius: 7px; border: none; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+.view-tab:hover { color: var(--white); background: var(--s3); }
+.view-tab.active { background: var(--s3); color: var(--white); }
+
+/* GRID */
+.grid-wrap { flex: 1; overflow: auto; position: relative; }
+.grid-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+.grid-wrap::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+
+.time-grid { display: grid; grid-template-columns: 56px repeat(7, 1fr); min-width: 900px; }
+
+/* Day headers */
+.day-hdr-row { display: contents; }
+.grid-corner { width: 56px; background: var(--s1); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+.day-hdr { background: var(--s1); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 10px 8px; text-align: center; position: sticky; top: 0; z-index: 20; }
+.dh-name { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.dh-num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--muted2); line-height: 1; }
+.day-hdr.today .dh-name { color: var(--blue-l); }
+.day-hdr.today .dh-num { color: var(--white); background: var(--blue); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 16px; box-shadow: 0 0 14px rgba(45,106,255,0.5); }
+
+/* Time rows */
+.time-col { background: var(--s1); border-right: 1px solid var(--border); padding: 0 8px; display: flex; align-items: flex-start; justify-content: flex-end; height: 60px; padding-top: 6px; }
+.time-lbl { font-size: 10px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.cell { border-right: 1px solid var(--border); border-bottom: 1px solid rgba(255,255,255,0.04); height: 60px; position: relative; transition: background 0.15s; cursor: pointer; }
+.cell:hover { background: rgba(45,106,255,0.04); }
+.cell.today-col { background: rgba(45,106,255,0.02); }
+
+/* Event blocks */
+.event-block { position: absolute; left: 3px; right: 3px; border-radius: 7px; padding: 5px 7px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; overflow: hidden; z-index: 10; }
+.event-block:hover { filter: brightness(1.15); transform: scale(1.01); z-index: 15; }
+.event-block .eb-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-block .eb-time { font-size: 9px; opacity: 0.75; }
+.eb-blue { background: rgba(45,106,255,0.3); border-left: 3px solid var(--blue); color: #c0d4ff; }
+.eb-orange { background: rgba(255,107,26,0.28); border-left: 3px solid var(--orange); color: #ffd0b0; }
+.eb-green { background: rgba(34,211,160,0.25); border-left: 3px solid var(--green); color: #b0f5e8; }
+.eb-purple { background: rgba(167,139,250,0.25); border-left: 3px solid var(--purple); color: #ddd0ff; }
+.eb-gold { background: rgba(255,209,102,0.22); border-left: 3px solid var(--gold); color: #fff0b0; }
+.eb-teal { background: rgba(34,211,211,0.22); border-left: 3px solid var(--teal); color: #b0f0f0; }
+
+/* Current time line */
+.time-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--red); z-index: 25; pointer-events: none; }
+.time-line::before { content: ''; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--red); box-shadow: 0 0 8px rgba(255,77,109,0.6); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="bg-atm"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="t-logo"><div class="t-icon">🦉</div>Study<span class="t-dot">AM</span></div>
+  <div class="t-sep"></div>
+  <div class="t-crumb"><span>Painel</span> ›<span class="t-cur">Cronogramas</span></div>
+  <div class="t-right">
+    <button class="tbtn">📤 Exportar</button>
+    <button class="tbtn primary" onclick="alert('Novo cronograma!')">+ Novo Cronograma</button>
+    <div class="t-avatar">JP</div>
+  </div>
+</div>
+<div class="glow-line"></div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-top">
+      <h3>Cronogramas</h3>
+      <button class="btn-new">+ Novo Cronograma</button>
+    </div>
+
+    <div class="sb-list">
+      <div class="sb-section-lbl">Ativos</div>
+
+      <div class="sched-item active">
+        <div class="si-top">
+          <div class="si-name">Semana de Provas</div>
+          <div class="si-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28">
+              <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+              <circle cx="14" cy="14" r="11" fill="none" stroke="#2d6aff" stroke-width="3" stroke-dasharray="69.1" stroke-dashoffset="24.2" stroke-linecap="round"/>
+            </svg>
+            <div class="si-ring-val">65%</div>
+          </div>
+        </div>
+        <div class="si-meta"><span>📅 29 abr – 5 mai</span><span>12 sessões</span></div>
+        <div class="si-bar" style="background:linear-gradient(90deg,var(--blue) 65%,var(--s3) 65%)"></div>
+      </div>
+
+      <div class="sched-item">
+        <div class="si-top">
+          <div class="si-name">Revisão Bimestral</div>
+          <div class="si-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28">
+              <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+              <circle cx="14" cy="14" r="11" fill="none" stroke="#22d3a0" stroke-width="3" stroke-dasharray="69.1" stroke-dashoffset="41.5" stroke-linecap="round"/>
+            </svg>
+            <div class="si-ring-val">40%</div>
+          </div>
+        </div>
+        <div class="si-meta"><span>📅 1 – 15 mai</span><span>8 sessões</span></div>
+        <div class="si-bar" style="background:linear-gradient(90deg,var(--green) 40%,var(--s3) 40%)"></div>
+      </div>
+
+      <div class="sched-item">
+        <div class="si-top">
+          <div class="si-name">Rotina Semanal</div>
+          <div class="si-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28">
+              <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+              <circle cx="14" cy="14" r="11" fill="none" stroke="#ffaa44" stroke-width="3" stroke-dasharray="69.1" stroke-dashoffset="13.8" stroke-linecap="round"/>
+            </svg>
+            <div class="si-ring-val">80%</div>
+          </div>
+        </div>
+        <div class="si-meta"><span>📅 Recorrente</span><span>5 sessões/sem</span></div>
+        <div class="si-bar" style="background:linear-gradient(90deg,var(--orange-l) 80%,var(--s3) 80%)"></div>
+      </div>
+
+      <div class="sb-section-lbl">Rascunhos</div>
+
+      <div class="sched-item">
+        <div class="si-top">
+          <div class="si-name">ENEM — 3 meses</div>
+          <span class="si-badge" style="background:rgba(255,209,102,0.12);color:var(--gold)">Rascunho</span>
+        </div>
+        <div class="si-meta"><span>Não publicado</span><span>0 sessões</span></div>
+      </div>
+
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-stats">
+        <div class="sbs"><div class="sbs-val">3</div><div class="sbs-lbl">Ativos</div></div>
+        <div class="sbs"><div class="sbs-val">28</div><div class="sbs-lbl">Sessões</div></div>
+        <div class="sbs"><div class="sbs-val">62h</div><div class="sbs-lbl">Total</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- WEEK BAR -->
+    <div class="week-bar">
+      <button class="week-nav">‹</button>
+      <div class="week-label">Semana de Provas — 29 abr a 5 mai</div>
+      <button class="week-nav">›</button>
+      <button class="week-today-btn">Hoje</button>
+      <div class="week-progress">
+        <span class="wp-label">Progresso:</span>
+        <div class="wp-bar"><div class="wp-fill" style="width:65%"></div></div>
+        <span class="wp-pct">65%</span>
+      </div>
+      <div class="view-tabs">
+        <button class="view-tab active">Semana</button>
+        <button class="view-tab">Dia</button>
+        <button class="view-tab">Mês</button>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid-wrap">
+      <div class="time-grid">
+
+        <!-- HEADERS -->
+        <div class="grid-corner"></div>
+        <div class="day-hdr"><div class="dh-name">Seg</div><div class="dh-num">28</div></div>
+        <div class="day-hdr today"><div class="dh-name">Ter</div><div class="dh-num">29</div></div>
+        <div class="day-hdr"><div class="dh-name">Qua</div><div class="dh-num">30</div></div>
+        <div class="day-hdr"><div class="dh-name">Qui</div><div class="dh-num">1</div></div>
+        <div class="day-hdr"><div class="dh-name">Sex</div><div class="dh-num">2</div></div>
+        <div class="day-hdr"><div class="dh-name">Sáb</div><div class="dh-num">3</div></div>
+        <div class="day-hdr"><div class="dh-name">Dom</div><div class="dh-num">4</div></div>
+
+        <!-- 07:00 -->
+        <div class="time-col"><span class="time-lbl">07:00</span></div>
+        <div class="cell"></div>
+        <div class="cell today-col"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+
+        <!-- 08:00 -->
+        <div class="time-col"><span class="time-lbl">08:00</span></div>
+        <div class="cell"><div class="event-block eb-blue" style="top:4px;height:52px"><div class="eb-title">🔬 Biologia</div><div class="eb-time">08:00 – 09:00</div></div></div>
+        <div class="cell today-col"><div class="event-block eb-orange" style="top:4px;height:52px"><div class="eb-title">📐 Matemática</div><div class="eb-time">08:00 – 09:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-green" style="top:4px;height:52px"><div class="eb-title">🧪 Química</div><div class="eb-time">08:00 – 09:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-blue" style="top:4px;height:108px"><div class="eb-title">📚 Revisão Geral</div><div class="eb-time">08:00 – 10:00</div></div></div>
+        <div class="cell"></div>
+
+        <!-- 09:00 -->
+        <div class="time-col"><span class="time-lbl">09:00</span></div>
+        <div class="cell"></div>
+        <div class="cell today-col"></div>
+        <div class="cell"><div class="event-block eb-purple" style="top:4px;height:52px"><div class="eb-title">✏️ Português</div><div class="eb-time">09:00 – 10:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-gold" style="top:4px;height:52px"><div class="eb-title">🌍 História</div><div class="eb-time">09:00 – 10:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+
+        <!-- 10:00 -->
+        <div class="time-col"><span class="time-lbl">10:00</span></div>
+        <div class="cell"><div class="event-block eb-teal" style="top:4px;height:52px"><div class="eb-title">⚛️ Física</div><div class="eb-time">10:00 – 11:00</div></div></div>
+        <div class="cell today-col" style="position:relative">
+          <div class="time-line" style="top:40px"></div>
+          <div class="event-block eb-green" style="top:44px;height:52px"><div class="eb-title">🔬 Biologia — Revisão</div><div class="eb-time">10:40 – 11:40</div></div>
+        </div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+
+        <!-- 11:00 -->
+        <div class="time-col"><span class="time-lbl">11:00</span></div>
+        <div class="cell"></div>
+        <div class="cell today-col"></div>
+        <div class="cell"><div class="event-block eb-orange" style="top:4px;height:52px"><div class="eb-title">📐 Mat. Avançada</div><div class="eb-time">11:00 – 12:00</div></div></div>
+        <div class="cell"><div class="event-block eb-blue" style="top:4px;height:52px"><div class="eb-title">🌍 Geog. Revisão</div><div class="eb-time">11:00 – 12:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-purple" style="top:4px;height:108px"><div class="eb-title">📝 Simulado Geral</div><div class="eb-time">11:00 – 13:00</div></div></div>
+
+        <!-- 12:00 -->
+        <div class="time-col"><span class="time-lbl">12:00</span></div>
+        <div class="cell"></div>
+        <div class="cell today-col"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+
+        <!-- 13:00 -->
+        <div class="time-col"><span class="time-lbl">13:00</span></div>
+        <div class="cell"><div class="event-block eb-gold" style="top:4px;height:52px"><div class="eb-title">📝 Quiz StudyAM</div><div class="eb-time">13:00 – 14:00</div></div></div>
+        <div class="cell today-col"><div class="event-block eb-purple" style="top:4px;height:52px"><div class="eb-title">✏️ Redação</div><div class="eb-time">13:00 – 14:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-teal" style="top:4px;height:52px"><div class="eb-title">⚛️ Física — Exerc.</div><div class="eb-time">13:00 – 14:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-orange" style="top:4px;height:52px"><div class="eb-title">📐 Matemática</div><div class="eb-time">13:00 – 14:00</div></div></div>
+        <div class="cell"></div>
+
+        <!-- 14:00 -->
+        <div class="time-col"><span class="time-lbl">14:00</span></div>
+        <div class="cell"></div>
+        <div class="cell today-col"></div>
+        <div class="cell"><div class="event-block eb-teal" style="top:4px;height:52px"><div class="eb-title">⚛️ Física</div><div class="eb-time">14:00 – 15:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-purple" style="top:4px;height:52px"><div class="eb-title">✏️ Gramática</div><div class="eb-time">14:00 – 15:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+
+        <!-- 15:00 -->
+        <div class="time-col"><span class="time-lbl">15:00</span></div>
+        <div class="cell"></div>
+        <div class="cell today-col"><div class="event-block eb-gold" style="top:4px;height:52px"><div class="eb-title">📊 Quiz IA</div><div class="eb-time">15:00 – 16:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"><div class="event-block eb-green" style="top:4px;height:52px"><div class="eb-title">🔬 Bio — Genética</div><div class="eb-time">15:00 – 16:00</div></div></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.sched-item').forEach(i => {
+    i.addEventListener('click', function() {
+      document.querySelectorAll('.sched-item').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.view-tab').forEach(t => {
+    t.addEventListener('click', function() {
+      document.querySelectorAll('.view-tab').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
