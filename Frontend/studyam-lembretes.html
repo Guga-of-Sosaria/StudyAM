@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAM — Lembretes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07091a; --s1: #0d1226; --s2: #111828; --s3: #182038;
+  --border: rgba(255,255,255,0.07);
+  --blue: #2d6aff; --blue-l: #6696ff; --blue-d: rgba(45,106,255,0.12);
+  --orange: #ff6b1a; --orange-l: #ffaa44; --orange-d: rgba(255,107,26,0.12);
+  --green: #22d3a0; --green-d: rgba(34,211,160,0.1);
+  --red: #ff4d6d; --red-d: rgba(255,77,109,0.1);
+  --gold: #ffd166; --gold-d: rgba(255,209,102,0.1);
+  --purple: #a78bfa; --purple-d: rgba(167,139,250,0.1);
+  --white: #eef2ff; --muted: #4e5f88; --muted2: #7e8eb5;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; color: var(--white); overflow: hidden; }
+
+/* BG */
+.bg-atm { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 65% 45% at 80% 15%, rgba(45,106,255,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 15% 85%, rgba(255,107,26,0.07) 0%, transparent 60%); }
+
+/* TOPBAR */
+.topbar { height: 56px; display: flex; align-items: center; padding: 0 24px; gap: 14px;
+  background: rgba(7,9,26,0.92); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px); flex-shrink: 0; position: relative; z-index: 50; }
+.t-logo { display: flex; align-items: center; gap: 9px; font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+.t-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--orange)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 16px rgba(45,106,255,0.4); }
+.t-dot { color: var(--orange-l); }
+.t-sep { width: 1px; height: 22px; background: var(--border); }
+.t-crumb { font-size: 13px; color: var(--muted2); display: flex; gap: 7px; }
+.t-cur { color: var(--white); font-weight: 500; }
+.t-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.t-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #1040c8); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2px solid rgba(45,106,255,0.35); cursor: pointer; }
+.glow-line { height: 1px; background: linear-gradient(90deg, transparent, rgba(45,106,255,0.5) 40%, rgba(255,107,26,0.35) 70%, transparent); flex-shrink: 0; position: relative; z-index: 49; }
+
+/* LAYOUT */
+.app { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
+
+/* SIDEBAR */
+.sb { width: 260px; flex-shrink: 0; background: var(--s1); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sb-head { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); }
+.sb-head h3 { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; }
+.btn-new { width: 100%; background: linear-gradient(135deg, var(--blue), #1a4fd6); border: none; border-radius: 9px; padding: 9px 14px; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; gap: 7px; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 14px rgba(45,106,255,0.3); }
+.btn-new:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,106,255,0.45); }
+
+/* Mini calendar */
+.mini-cal { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.cal-month { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--white); }
+.cal-nav { width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--muted2); font-size: 11px; display: flex; align-items: center; justify-content: center; transition: all 0.18s; }
+.cal-nav:hover { background: var(--s3); color: var(--white); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-day-hdr { font-size: 9px; color: var(--muted); text-align: center; font-weight: 600; padding: 3px 0; text-transform: uppercase; }
+.cal-day { font-size: 11px; text-align: center; padding: 4px 2px; border-radius: 5px; cursor: pointer; color: var(--muted2); transition: all 0.18s; position: relative; }
+.cal-day:hover { background: var(--s3); color: var(--white); }
+.cal-day.today { background: var(--blue); color: white; font-weight: 700; box-shadow: 0 0 10px rgba(45,106,255,0.4); }
+.cal-day.has-rem::after { content: ''; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); width: 3px; height: 3px; border-radius: 50%; background: var(--orange-l); }
+.cal-day.other { color: var(--muted); opacity: 0.4; }
+
+/* Filter */
+.sb-filters { padding: 12px 10px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px; }
+.filter-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; cursor: pointer; transition: all 0.18s; border: 1px solid transparent; }
+.filter-item:hover { background: var(--s3); }
+.filter-item.active { background: var(--blue-d); border-color: rgba(45,106,255,0.22); }
+.fi-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.fi-label { font-size: 12px; color: var(--muted2); flex: 1; }
+.filter-item.active .fi-label { color: var(--white); }
+.fi-count { font-size: 10px; color: var(--muted); background: var(--s3); padding: 1px 6px; border-radius: 10px; }
+
+/* Stats */
+.sb-stats { padding: 12px 14px; border-top: 1px solid var(--border); margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ss-card { background: var(--s2); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; }
+.ss-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; background: linear-gradient(90deg, var(--blue-l), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.ss-lbl { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* MAIN */
+.main { flex: 1; overflow-y: auto; background: var(--bg); }
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+
+.main-inner { padding: 28px 32px; }
+
+/* Page header */
+.page-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; animation: fadeUp 0.4s ease both; }
+.page-title h1 { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+.page-title p { font-size: 13px; color: var(--muted2); }
+.hdr-actions { display: flex; gap: 8px; }
+.hbtn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9px; border: 1px solid var(--border); background: var(--s1); font-size: 12px; font-weight: 600; color: var(--muted2); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+.hbtn:hover { color: var(--white); border-color: rgba(255,255,255,0.15); background: var(--s3); }
+.hbtn.primary { background: linear-gradient(135deg, var(--blue), #1a4fd6); color: white; border: none; box-shadow: 0 4px 14px rgba(45,106,255,0.3); }
+.hbtn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,106,255,0.45); }
+
+/* QUICK ADD */
+.quick-add { background: var(--s1); border: 1.5px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 24px; display: flex; gap: 10px; align-items: center; transition: border-color 0.2s; animation: fadeUp 0.4s 0.05s ease both; }
+.quick-add:focus-within { border-color: rgba(45,106,255,0.35); box-shadow: 0 0 0 3px rgba(45,106,255,0.07); }
+.qa-icon { font-size: 18px; flex-shrink: 0; }
+.qa-input { flex: 1; background: transparent; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--white); outline: none; }
+.qa-input::placeholder { color: var(--muted); }
+.qa-extras { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.qa-btn { height: 30px; padding: 0 11px; border-radius: 7px; border: 1px solid var(--border); background: transparent; font-size: 11px; color: var(--muted2); cursor: pointer; transition: all 0.18s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 4px; }
+.qa-btn:hover { background: var(--s3); color: var(--white); }
+.qa-send { width: 32px; height: 32px; border-radius: 8px; background: var(--blue); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(45,106,255,0.35); }
+.qa-send:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(45,106,255,0.5); }
+
+/* SECTION LABEL */
+.sec-label { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.sec-count { font-size: 10px; background: var(--s3); padding: 2px 7px; border-radius: 10px; color: var(--muted2); }
+
+/* REMINDER CARDS */
+.rem-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+
+.rem-card { background: var(--s1); border: 1.5px solid var(--border); border-radius: 13px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 13px; transition: all 0.22s; cursor: pointer; position: relative; overflow: hidden; animation: fadeUp 0.35s ease both; }
+.rem-card:hover { border-color: rgba(255,255,255,0.12); background: var(--s2); transform: translateX(3px); }
+.rem-card.done { opacity: 0.5; }
+.rem-card.done .rem-title { text-decoration: line-through; color: var(--muted2); }
+
+/* Priority stripe */
+.rem-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
+.rem-card.p-high::before { background: var(--red); }
+.rem-card.p-med::before { background: var(--orange-l); }
+.rem-card.p-low::before { background: var(--green); }
+.rem-card.p-none::before { background: var(--muted); }
+
+/* Checkbox */
+.rem-check { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--border); background: transparent; flex-shrink: 0; margin-top: 1px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.rem-check:hover { border-color: var(--blue); background: var(--blue-d); }
+.rem-card.done .rem-check { background: rgba(34,211,160,0.15); border-color: rgba(34,211,160,0.4); color: var(--green); }
+
+.rem-body { flex: 1; min-width: 0; }
+.rem-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.rem-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.rem-time { font-size: 11px; color: var(--muted2); display: flex; align-items: center; gap: 3px; }
+.rem-tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; flex-shrink: 0; }
+.tag-urgente { background: var(--red-d); color: var(--red); border: 1px solid rgba(255,77,109,0.2); }
+.tag-prova { background: var(--orange-d); color: var(--orange-l); border: 1px solid rgba(255,107,26,0.2); }
+.tag-estudo { background: var(--blue-d); color: var(--blue-l); border: 1px solid rgba(45,106,255,0.2); }
+.tag-tarefa { background: var(--gold-d); color: var(--gold); border: 1px solid rgba(255,209,102,0.2); }
+.tag-pessoal { background: var(--purple-d); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+
+.rem-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.2s; }
+.rem-card:hover .rem-actions { opacity: 1; }
+.ract { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted2); transition: all 0.18s; }
+.ract:hover { background: var(--s3); color: var(--white); }
+.ract.del:hover { background: var(--red-d); border-color: rgba(255,77,109,0.3); color: var(--red); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="bg-atm"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="t-logo"><div class="t-icon">🦉</div>Study<span class="t-dot">AM</span></div>
+  <div class="t-sep"></div>
+  <div class="t-crumb"><span>Painel</span> › <span class="t-cur">Lembretes</span></div>
+  <div class="t-right"><div class="t-avatar">JP</div></div>
+</div>
+<div class="glow-line"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-head">
+      <h3>Lembretes</h3>
+      <button class="btn-new" onclick="openNew()">+ Novo Lembrete</button>
+    </div>
+
+    <!-- MINI CALENDAR -->
+    <div class="mini-cal">
+      <div class="cal-header">
+        <button class="cal-nav">‹</button>
+        <div class="cal-month">Abril 2025</div>
+        <button class="cal-nav">›</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-hdr">D</div><div class="cal-day-hdr">S</div><div class="cal-day-hdr">T</div><div class="cal-day-hdr">Q</div><div class="cal-day-hdr">Q</div><div class="cal-day-hdr">S</div><div class="cal-day-hdr">S</div>
+        <div class="cal-day other">30</div><div class="cal-day other">31</div>
+        <div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+        <div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day has-rem">8</div><div class="cal-day">9</div><div class="cal-day has-rem">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+        <div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day has-rem">15</div><div class="cal-day">16</div><div class="cal-day has-rem">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+        <div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+        <div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day today">29</div><div class="cal-day has-rem">30</div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="sb-filters">
+      <div class="filter-item active" onclick="setFilter(this)">
+        <div class="fi-dot" style="background:var(--blue-l)"></div>
+        <div class="fi-label">Todos</div>
+        <div class="fi-count">8</div>
+      </div>
+      <div class="filter-item" onclick="setFilter(this)">
+        <div class="fi-dot" style="background:var(--red)"></div>
+        <div class="fi-label">Urgente</div>
+        <div class="fi-count">2</div>
+      </div>
+      <div class="filter-item" onclick="setFilter(this)">
+        <div class="fi-dot" style="background:var(--orange-l)"></div>
+        <div class="fi-label">Provas</div>
+        <div class="fi-count">3</div>
+      </div>
+      <div class="filter-item" onclick="setFilter(this)">
+        <div class="fi-dot" style="background:var(--blue-l)"></div>
+        <div class="fi-label">Estudos</div>
+        <div class="fi-count">4</div>
+      </div>
+      <div class="filter-item" onclick="setFilter(this)">
+        <div class="fi-dot" style="background:var(--gold)"></div>
+        <div class="fi-label">Tarefas</div>
+        <div class="fi-count">2</div>
+      </div>
+      <div class="filter-item" onclick="setFilter(this)">
+        <div class="fi-dot" style="background:var(--green)"></div>
+        <div class="fi-label">Concluídos</div>
+        <div class="fi-count">3</div>
+      </div>
+    </div>
+
+    <div class="sb-stats">
+      <div class="ss-card"><div class="ss-val">8</div><div class="ss-lbl">Pendentes</div></div>
+      <div class="ss-card"><div class="ss-val">3</div><div class="ss-lbl">Hoje</div></div>
+      <div class="ss-card"><div class="ss-val">2</div><div class="ss-lbl">Urgentes</div></div>
+      <div class="ss-card"><div class="ss-val">12</div><div class="ss-lbl">Este mês</div></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-inner">
+
+      <!-- PAGE HEADER -->
+      <div class="page-hdr">
+        <div class="page-title">
+          <h1>Meus Lembretes</h1>
+          <p>Terça-feira, 29 de abril de 2025 • 8 pendentes</p>
+        </div>
+        <div class="hdr-actions">
+          <button class="hbtn">🔍 Buscar</button>
+          <button class="hbtn">⇅ Ordenar</button>
+          <button class="hbtn primary" onclick="openNew()">+ Novo</button>
+        </div>
+      </div>
+
+      <!-- QUICK ADD -->
+      <div class="quick-add">
+        <span class="qa-icon">🔔</span>
+        <input class="qa-input" placeholder="Adicionar lembrete rápido... (pressione Enter)" onkeydown="if(event.key==='Enter')addQuick(this)">
+        <div class="qa-extras">
+          <button class="qa-btn">📅 Data</button>
+          <button class="qa-btn">🏷 Tag</button>
+          <button class="qa-btn">⚡ Prior.</button>
+          <button class="qa-send" onclick="addQuick(document.querySelector('.qa-input'))">➤</button>
+        </div>
+      </div>
+
+      <!-- HOJE -->
+      <div class="sec-label" style="animation-delay:.1s">Hoje <span class="sec-count">3</span></div>
+      <div class="rem-list" id="rem-list">
+
+        <div class="rem-card p-high" style="animation-delay:.12s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Revisar capítulo 3 de Biologia antes da prova</div>
+            <div class="rem-meta">
+              <span class="rem-time">⏰ Hoje, 18:00</span>
+              <span class="rem-tag tag-urgente">Urgente</span>
+              <span class="rem-tag tag-prova">Prova</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract" title="Editar">✎</button>
+            <button class="ract" title="Adiar">⏱</button>
+            <button class="ract del" title="Excluir">✕</button>
+          </div>
+        </div>
+
+        <div class="rem-card p-med" style="animation-delay:.16s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Entregar lista de exercícios de Matemática</div>
+            <div class="rem-meta">
+              <span class="rem-time">⏰ Hoje, 23:59</span>
+              <span class="rem-tag tag-tarefa">Tarefa</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract">⏱</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+        <div class="rem-card p-low done" style="animation-delay:.2s" onclick="toggleDone(this)">
+          <div class="rem-check">✓</div>
+          <div class="rem-body">
+            <div class="rem-title">Ler resumo de História — Revolução Industrial</div>
+            <div class="rem-meta">
+              <span class="rem-time">⏰ Hoje, 10:00</span>
+              <span class="rem-tag tag-estudo">Estudo</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PRÓXIMOS DIAS -->
+      <div class="sec-label" style="animation-delay:.22s">Próximos dias <span class="sec-count">5</span></div>
+      <div class="rem-list">
+
+        <div class="rem-card p-high" style="animation-delay:.24s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Prova de Química — Reações Orgânicas</div>
+            <div class="rem-meta">
+              <span class="rem-time">📅 Quinta, 30 abr</span>
+              <span class="rem-tag tag-urgente">Urgente</span>
+              <span class="rem-tag tag-prova">Prova</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract">⏱</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+        <div class="rem-card p-med" style="animation-delay:.28s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Assistir videoaula de Física — Leis de Newton</div>
+            <div class="rem-meta">
+              <span class="rem-time">📅 Sexta, 1 mai</span>
+              <span class="rem-tag tag-estudo">Estudo</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract">⏱</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+        <div class="rem-card p-low" style="animation-delay:.3s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Redação sobre Meio Ambiente — entregar semana que vem</div>
+            <div class="rem-meta">
+              <span class="rem-time">📅 Seg, 5 mai</span>
+              <span class="rem-tag tag-tarefa">Tarefa</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract">⏱</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+        <div class="rem-card p-none" style="animation-delay:.32s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Comprar caderno novo para anotações</div>
+            <div class="rem-meta">
+              <span class="rem-time">📅 Sáb, 3 mai</span>
+              <span class="rem-tag tag-pessoal">Pessoal</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract">⏱</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+        <div class="rem-card p-med" style="animation-delay:.34s" onclick="toggleDone(this)">
+          <div class="rem-check"></div>
+          <div class="rem-body">
+            <div class="rem-title">Fazer quiz de Biologia no StudyAM</div>
+            <div class="rem-meta">
+              <span class="rem-time">📅 Qui, 1 mai</span>
+              <span class="rem-tag tag-estudo">Estudo</span>
+            </div>
+          </div>
+          <div class="rem-actions">
+            <button class="ract">✎</button>
+            <button class="ract">⏱</button>
+            <button class="ract del">✕</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="height:40px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDone(card) {
+    if (event.target.closest('.rem-actions') || event.target.closest('.rem-check')) return;
+    card.classList.toggle('done');
+    const chk = card.querySelector('.rem-check');
+    chk.textContent = card.classList.contains('done') ? '✓' : '';
+  }
+  document.querySelectorAll('.rem-check').forEach(c => {
+    c.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const card = this.closest('.rem-card');
+      card.classList.toggle('done');
+      this.textContent = card.classList.contains('done') ? '✓' : '';
+    });
+  });
+  document.querySelectorAll('.ract.del').forEach(b => {
+    b.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const card = this.closest('.rem-card');
+      card.style.animation = 'none';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(20px)';
+      card.style.transition = 'all 0.3s ease';
+      setTimeout(() => card.remove(), 300);
+    });
+  });
+  function setFilter(el) {
+    document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function addQuick(input) {
+    const val = input.value.trim();
+    if (!val) return;
+    const list = document.getElementById('rem-list');
+    const card = document.createElement('div');
+    card.className = 'rem-card p-low';
+    card.innerHTML = `<div class="rem-check"></div><div class="rem-body"><div class="rem-title">${val}</div><div class="rem-meta"><span class="rem-time">⏰ Hoje</span><span class="rem-tag tag-estudo">Estudo</span></div></div><div class="rem-actions"><button class="ract">✎</button><button class="ract del">✕</button></div>`;
+    list.prepend(card);
+    input.value = '';
+    card.querySelector('.rem-check').addEventListener('click', function(e) {
+      e.stopPropagation();
+      const c2 = this.closest('.rem-card');
+      c2.classList.toggle('done');
+      this.textContent = c2.classList.contains('done') ? '✓' : '';
+    });
+  }
+  function openNew() { document.querySelector('.qa-input').focus(); }
+</script>
+</body>
+</html>
