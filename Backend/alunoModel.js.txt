@@ -1,0 +1,11 @@
+class Aluno {
+    constructor(nome, email) {
+        this.id = crypto.randomUUID();
+        this.nome = nome;
+        this.email = email;
+        this.criadoEm = new Date();
+        this.atualizadoEm = new Date();
+    }
+}
+
+module.exports = Aluno;

@@ -1,0 +1,12 @@
+class Professor {
+    constructor(nome, email, disciplina) {
+        this.id = crypto.randomUUID();
+        this.nome = nome;
+        this.email = email;
+        this.disciplina = disciplina;
+        this.criadoEm = new Date();
+        this.atualizadoEm = new Date();
+    }
+}
+
+module.exports = Professor;

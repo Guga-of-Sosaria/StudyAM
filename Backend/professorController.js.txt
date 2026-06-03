@@ -1,0 +1,90 @@
+const Professor = require("../models/professorModel");
+const db = require("../database/database");
+
+class ProfessorController {
+    criar(req, res) {
+        const { nome, email, disciplina } = req.body;
+
+        if (!nome || !email || !disciplina) {
+            return res.status(400).json({
+                erro: "Dados inválidos"
+            });
+        }
+
+        const existe = db.professores.find(
+            professor => professor.email === email
+        );
+
+        if (existe) {
+            return res.status(409).json({
+                erro: "Email já cadastrado"
+            });
+        }
+
+        const professor = new Professor(
+            nome,
+            email,
+            disciplina
+        );
+
+        db.professores.push(professor);
+
+        return res.status(201).json(professor);
+    }
+
+    listar(req, res) {
+        return res.json(db.professores);
+    }
+
+    buscar(req, res) {
+        const professor = db.professores.find(
+            professor => professor.id === req.params.id
+        );
+
+        if (!professor) {
+            return res.status(404).json({
+                erro: "Professor não encontrado"
+            });
+        }
+
+        return res.json(professor);
+    }
+
+    atualizar(req, res) {
+        const professor = db.professores.find(
+            professor => professor.id === req.params.id
+        );
+
+        if (!professor) {
+            return res.status(404).json({
+                erro: "Professor não encontrado"
+            });
+        }
+
+        professor.nome = req.body.nome ?? professor.nome;
+        professor.email = req.body.email ?? professor.email;
+        professor.disciplina =
+            req.body.disciplina ?? professor.disciplina;
+        professor.atualizadoEm = new Date();
+
+        return res.json(professor);
+    }
+
+    remover(req, res) {
+        const indice = db.professores.findIndex(
+            professor => professor.id === req.params.id
+        );
+
+        if (indice === -1) {
+            return res.status(404).json({
+                erro: "Professor não encontrado"
+            });
+        }
+
+        db.professores.splice(indice, 1);
+
+        return res.status(204).send();
+    }
+}
+
+module.exports = new ProfessorController();

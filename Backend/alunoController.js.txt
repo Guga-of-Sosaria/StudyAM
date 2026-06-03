@@ -1,0 +1,84 @@
+const Aluno = require("../models/alunoModel");
+const db = require("../database/database");
+
+class AlunoController {
+    criar(req, res) {
+        const { nome, email } = req.body;
+
+        if (!nome || !email) {
+            return res.status(400).json({
+                erro: "Dados inválidos"
+            });
+        }
+
+        const existe = db.alunos.find(
+            aluno => aluno.email === email
+        );
+
+        if (existe) {
+            return res.status(409).json({
+                erro: "Email já cadastrado"
+            });
+        }
+
+        const aluno = new Aluno(nome, email);
+
+        db.alunos.push(aluno);
+
+        return res.status(201).json(aluno);
+    }
+
+    listar(req, res) {
+        return res.json(db.alunos);
+    }
+
+    buscar(req, res) {
+        const aluno = db.alunos.find(
+            aluno => aluno.id === req.params.id
+        );
+
+        if (!aluno) {
+            return res.status(404).json({
+                erro: "Aluno não encontrado"
+            });
+        }
+
+        return res.json(aluno);
+    }
+
+    atualizar(req, res) {
+        const aluno = db.alunos.find(
+            aluno => aluno.id === req.params.id
+        );
+
+        if (!aluno) {
+            return res.status(404).json({
+                erro: "Aluno não encontrado"
+            });
+        }
+
+        aluno.nome = req.body.nome ?? aluno.nome;
+        aluno.email = req.body.email ?? aluno.email;
+        aluno.atualizadoEm = new Date();
+
+        return res.json(aluno);
+    }
+
+    remover(req, res) {
+        const indice = db.alunos.findIndex(
+            aluno => aluno.id === req.params.id
+        );
+
+        if (indice === -1) {
+            return res.status(404).json({
+                erro: "Aluno não encontrado"
+            });
+        }
+
+        db.alunos.splice(indice, 1);
+
+        return res.status(204).send();
+    }
+}
+
+module.exports = new AlunoController();
